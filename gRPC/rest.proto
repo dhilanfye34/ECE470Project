@@ -1,0 +1,143 @@
+syntax = "proto3";
+
+package restaurant;
+
+// Restaurant ordering service.
+service RestaurantService {
+  rpc login (LoginRequest) returns (LoginResponse);
+  rpc logout (LogoutRequest) returns (LogoutResponse);
+  rpc get_menu (MenuRequest) returns (MenuResponse);
+  rpc update_menu_price (UpdateMenuPriceRequest) returns (UpdateMenuPriceResponse);
+  rpc place_dine_in_order (DineInOrderRequest) returns (OrderResponse);
+  rpc place_takeout_order (TakeoutOrderRequest) returns (OrderResponse);
+  rpc list_orders (ListOrdersRequest) returns (ListOrdersResponse);
+  rpc mark_order_ready (MarkOrderReadyRequest) returns (MarkOrderReadyResponse);
+}
+
+message LoginRequest {
+  int32 requestId = 1;
+  string userId = 2;
+  string role = 3;
+}
+
+message LoginResponse {
+  int32 requestId = 1;
+  string status = 2;
+  string message = 3;
+}
+
+message LogoutRequest {
+  int32 requestId = 1;
+  string userId = 2;
+  string role = 3;
+}
+
+message LogoutResponse {
+  int32 requestId = 1;
+  string status = 2;
+  string message = 3;
+}
+
+message MenuRequest {
+  int32 requestId = 1;
+  string userId = 2;
+  string role = 3;
+}
+
+message MenuItem {
+  string itemId = 1;
+  string name = 2;
+  string category = 3;
+  double price = 4;
+}
+
+message MenuResponse {
+  int32 requestId = 1;
+  string status = 2;
+  string message = 3;
+  repeated MenuItem items = 4;
+}
+
+message UpdateMenuPriceRequest {
+  int32 requestId = 1;
+  string userId = 2;
+  string role = 3;
+  string itemId = 4;
+  double newPrice = 5;
+}
+
+message UpdateMenuPriceResponse {
+  int32 requestId = 1;
+  string status = 2;
+  string message = 3;
+}
+
+message GuestOrder {
+  int32 guestNumber = 1;
+  repeated string itemIds = 2;
+}
+
+message DineInOrderRequest {
+  int32 requestId = 1;
+  string userId = 2;
+  string role = 3;
+  int32 tableNumber = 4;
+  int32 guestCount = 5;
+  repeated GuestOrder guests = 6;
+}
+
+message OrderLineItem {
+  string itemId = 1;
+  int32 quantity = 2;
+}
+
+message TakeoutOrderRequest {
+  int32 requestId = 1;
+  string userId = 2;
+  string role = 3;
+  string guestName = 4;
+  repeated OrderLineItem items = 5;
+}
+
+message OrderResponse {
+  int32 requestId = 1;
+  string status = 2;
+  string message = 3;
+  string orderId = 4;
+  double total = 5;
+}
+
+message OrderSummary {
+  string orderId = 1;
+  string orderType = 2;
+  string status = 3;
+  int32 tableNumber = 4;
+  string guestName = 5;
+  double total = 6;
+}
+
+message ListOrdersRequest {
+  int32 requestId = 1;
+  string userId = 2;
+  string role = 3;
+}
+
+message ListOrdersResponse {
+  int32 requestId = 1;
+  string status = 2;
+  string message = 3;
+  repeated OrderSummary orders = 4;
+}
+
+message MarkOrderReadyRequest {
+  int32 requestId = 1;
+  string userId = 2;
+  string role = 3;
+  string orderId = 4;
+}
+
+message MarkOrderReadyResponse {
+  int32 requestId = 1;
+  string status = 2;
+  string message = 3;
+}

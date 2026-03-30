@@ -1,0 +1,98 @@
+[
+  {
+    "itemId": "1",
+    "name": "Fries",
+    "category": "starter",
+    "price": 4.99
+  },
+  {
+    "itemId": "2",
+    "name": "Mozzarella Sticks",
+    "category": "starter",
+    "price": 6.49
+  },
+  {
+    "itemId": "3",
+    "name": "Chicken Wings",
+    "category": "starter",
+    "price": 9.49
+  },
+  {
+    "itemId": "4",
+    "name": "Cheeseburger",
+    "category": "main",
+    "price": 10.99
+  },
+  {
+    "itemId": "5",
+    "name": "Chicken Sandwich",
+    "category": "main",
+    "price": 12.49
+  },
+  {
+    "itemId": "6",
+    "name": "Grilled Salmon",
+    "category": "main",
+    "price": 18.99
+  },
+  {
+    "itemId": "7",
+    "name": "Steak Frites",
+    "category": "main",
+    "price": 19.99
+  },
+  {
+    "itemId": "8",
+    "name": "Vodka Pasta",
+    "category": "main",
+    "price": 13.49
+  },
+  {
+    "itemId": "9",
+    "name": "Chocolate Cake",
+    "category": "dessert",
+    "price": 6.99
+  },
+  {
+    "itemId": "10",
+    "name": "Ice Cream",
+    "category": "dessert",
+    "price": 6.99
+  },
+  {
+    "itemId": "11",
+    "name": "Cheesecake",
+    "category": "dessert",
+    "price": 6.49
+  },
+  {
+    "itemId": "12",
+    "name": "Soda",
+    "category": "drink",
+    "price": 2.75
+  },
+  {
+    "itemId": "13",
+    "name": "Iced Tea",
+    "category": "drink",
+    "price": 4.99
+  },
+  {
+    "itemId": "14",
+    "name": "Lemonade",
+    "category": "drink",
+    "price": 3.25
+  },
+  {
+    "itemId": "15",
+    "name": "Coffee",
+    "category": "drink",
+    "price": 2.99
+  },
+  {
+    "itemId": "16",
+    "name": "Water",
+    "category": "drink",
+    "price": 1.5
+  }
+]
