@@ -4,13 +4,17 @@ import json
 import random
 import os
 import sys
+import threading
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../gRPC")))
 
 import rest_pb2
 import rest_pb2_grpc
 
-USERS = {"m1": "manager", "s1": "server", "c1": "chef"}
+USERS = {"m1": "manager", "s1": "server", "s2": "server", "s3": "server", "c1": "chef", "c2": "chef", "cust1": "customer"}
+
+menu_lock = threading.Lock()
+orders_lock = threading.Lock()
 
 def load_menu():
     if not os.path.exists("menu.json"):
@@ -33,7 +37,7 @@ def save_orders(orders):
         json.dump(orders, file, indent=2)
 
 def role_ok(role):
-    return role in ["manager", "server", "chef"]
+    return role in ["manager", "server", "chef", "customer"]
 
 def user_ok(user_id, role):
     return str(user_id) in USERS and USERS[str(user_id)] == role
@@ -57,8 +61,14 @@ def menu_dict(menu):
         d[str(item.get("itemId", ""))] = item
     return d
 
-def next_order_id():
-    return str(random.randint(1, 1000000))
+def next_order_id(orders):
+    used = set()
+    for o in orders:
+        used.add(str(o.get("orderId", "")))
+    while True:
+        oid = str(random.randint(1, 1000000))
+        if oid not in used:
+            return oid
 
 class RestaurantService(rest_pb2_grpc.RestaurantServiceServicer):
     def login(self, request, context):
@@ -86,7 +96,8 @@ class RestaurantService(rest_pb2_grpc.RestaurantServiceServicer):
         if not user_ok(request.userId, request.role):
             return rest_pb2.MenuResponse(requestId=request.requestId, status="error", message="invalid user", items=[])
         
-        menu = load_menu()
+        with menu_lock:
+            menu = load_menu()
         return rest_pb2.MenuResponse(requestId=request.requestId, status="success", message="menu loaded", items=build_menu_items(menu))
 
     def update_menu_price(self, request, context):
@@ -102,18 +113,19 @@ class RestaurantService(rest_pb2_grpc.RestaurantServiceServicer):
         if request.newPrice <= 0:
             return rest_pb2.UpdateMenuPriceResponse(requestId=request.requestId, status="error", message="invalid price")
 
-        menu = load_menu()
-        found = False
-        for item in menu:
-            if str(item.get("itemId", "")) == request.itemId:
-                item["price"] = float(request.newPrice)
-                found = True
-                break
+        with menu_lock:
+            menu = load_menu()
+            found = False
+            for item in menu:
+                if str(item.get("itemId", "")) == request.itemId:
+                    item["price"] = float(request.newPrice)
+                    found = True
+                    break
 
-        if not found:
-            return rest_pb2.UpdateMenuPriceResponse(requestId=request.requestId, status="error", message="item not found")
+            if not found:
+                return rest_pb2.UpdateMenuPriceResponse(requestId=request.requestId, status="error", message="item not found")
 
-        save_menu(menu)
+            save_menu(menu)
         return rest_pb2.UpdateMenuPriceResponse(requestId=request.requestId, status="success", message="price updated")
 
     def place_dine_in_order(self, request, context):
@@ -132,7 +144,8 @@ class RestaurantService(rest_pb2_grpc.RestaurantServiceServicer):
         if request.tableNumber < 1 or request.tableNumber > 1000:
             return rest_pb2.OrderResponse(requestId=request.requestId, status="error", message="invalid table number", orderId="", total=0)
 
-        menu = load_menu()
+        with menu_lock:
+            menu = load_menu()
         md = menu_dict(menu)
 
         total = 0.0
@@ -191,22 +204,23 @@ class RestaurantService(rest_pb2_grpc.RestaurantServiceServicer):
 
             all_guest_orders.append({"guestNumber": gn, "itemIds": item_ids})
 
-        order_id = next_order_id()
-        orders = load_orders()
-        orders.append(
-            {
-                "orderId": order_id,
-                "orderType": "dine-in",
-                "status": "confirmed",
-                "tableNumber": int(request.tableNumber),
-                "guestName": "",
-                "guestCount": int(request.guestCount),
-                "guests": all_guest_orders,
-                "items": [],
-                "total": float(total),
-            }
-        )
-        save_orders(orders)
+        with orders_lock:
+            orders = load_orders()
+            order_id = next_order_id(orders)
+            orders.append(
+                {
+                    "orderId": order_id,
+                    "orderType": "dine-in",
+                    "status": "confirmed",
+                    "tableNumber": int(request.tableNumber),
+                    "guestName": "",
+                    "guestCount": int(request.guestCount),
+                    "guests": all_guest_orders,
+                    "items": [],
+                    "total": float(total),
+                }
+            )
+            save_orders(orders)
 
         print(f"Kitchen notified: Order {order_id} (dine-in) Table {request.tableNumber}")
         return rest_pb2.OrderResponse(requestId=request.requestId, status="success", message="order placed", orderId=order_id, total=float(total))
@@ -222,7 +236,8 @@ class RestaurantService(rest_pb2_grpc.RestaurantServiceServicer):
         if len(request.items) == 0:
             return rest_pb2.OrderResponse(requestId=request.requestId, status="error", message="order must have at least 1 item", orderId="", total=0)
 
-        menu = load_menu()
+        with menu_lock:
+            menu = load_menu()
         md = menu_dict(menu)
 
         total_qty = 0
@@ -246,22 +261,23 @@ class RestaurantService(rest_pb2_grpc.RestaurantServiceServicer):
         if total_qty > 10:
             return rest_pb2.OrderResponse(requestId=request.requestId, status="error", message="takeout max is 10 items", orderId="", total=0)
 
-        order_id = next_order_id()
-        orders = load_orders()
-        orders.append(
-            {
-                "orderId": order_id,
-                "orderType": "takeout",
-                "status": "confirmed",
-                "tableNumber": 0,
-                "guestName": str(request.guestName),
-                "guestCount": 0,
-                "guests": [],
-                "items": line_items,
-                "total": float(total),
-            }
-        )
-        save_orders(orders)
+        with orders_lock:
+            orders = load_orders()
+            order_id = next_order_id(orders)
+            orders.append(
+                {
+                    "orderId": order_id,
+                    "orderType": "takeout",
+                    "status": "confirmed",
+                    "tableNumber": 0,
+                    "guestName": str(request.guestName),
+                    "guestCount": 0,
+                    "guests": [],
+                    "items": line_items,
+                    "total": float(total),
+                }
+            )
+            save_orders(orders)
 
         print(f"Kitchen notified: Order {order_id} (takeout) {request.guestName}")
         return rest_pb2.OrderResponse(requestId=request.requestId, status="success", message="order placed", orderId=order_id, total=float(total))
@@ -272,7 +288,8 @@ class RestaurantService(rest_pb2_grpc.RestaurantServiceServicer):
         if not user_ok(request.userId, request.role):
             return rest_pb2.ListOrdersResponse(requestId=request.requestId, status="error", message="invalid user", orders=[])
 
-        orders = load_orders()
+        with orders_lock:
+            orders = load_orders()
         summaries = []
         for o in orders:
             summaries.append(
@@ -296,18 +313,19 @@ class RestaurantService(rest_pb2_grpc.RestaurantServiceServicer):
         if request.orderId.strip() == "":
             return rest_pb2.MarkOrderReadyResponse(requestId=request.requestId, status="error", message="missing orderId")
 
-        orders = load_orders()
-        found = False
-        for o in orders:
-            if str(o.get("orderId", "")) == request.orderId:
-                o["status"] = "ready"
-                found = True
-                break
+        with orders_lock:
+            orders = load_orders()
+            found = False
+            for o in orders:
+                if str(o.get("orderId", "")) == request.orderId:
+                    o["status"] = "ready"
+                    found = True
+                    break
 
-        if not found:
-            return rest_pb2.MarkOrderReadyResponse(requestId=request.requestId, status="error", message="order not found")
+            if not found:
+                return rest_pb2.MarkOrderReadyResponse(requestId=request.requestId, status="error", message="order not found")
 
-        save_orders(orders)
+            save_orders(orders)
         print(f"Order ready: {request.orderId}")
         return rest_pb2.MarkOrderReadyResponse(requestId=request.requestId, status="success", message="order marked ready")
 
