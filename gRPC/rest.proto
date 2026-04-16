@@ -8,9 +8,16 @@ service RestaurantService {
   rpc logout (LogoutRequest) returns (LogoutResponse);
   rpc get_menu (MenuRequest) returns (MenuResponse);
   rpc update_menu_price (UpdateMenuPriceRequest) returns (UpdateMenuPriceResponse);
+  rpc add_menu_item (AddMenuItemRequest) returns (AddMenuItemResponse);
+  rpc remove_menu_item (RemoveMenuItemRequest) returns (RemoveMenuItemResponse);
+  rpc update_menu_item (UpdateMenuItemRequest) returns (UpdateMenuItemResponse);
   rpc place_dine_in_order (DineInOrderRequest) returns (OrderResponse);
   rpc place_takeout_order (TakeoutOrderRequest) returns (OrderResponse);
+  rpc place_online_order (OnlineOrderRequest) returns (OrderResponse);
   rpc list_orders (ListOrdersRequest) returns (ListOrdersResponse);
+  rpc update_order_status (UpdateOrderStatusRequest) returns (UpdateOrderStatusResponse);
+  rpc get_order_status (GetOrderStatusRequest) returns (GetOrderStatusResponse);
+  rpc generate_report (GenerateReportRequest) returns (GenerateReportResponse);
   rpc mark_order_ready (MarkOrderReadyRequest) returns (MarkOrderReadyResponse);
 }
 
@@ -49,6 +56,8 @@ message MenuItem {
   string name = 2;
   string category = 3;
   double price = 4;
+  string description = 5;
+  bool availability = 6;
 }
 
 message MenuResponse {
@@ -67,6 +76,45 @@ message UpdateMenuPriceRequest {
 }
 
 message UpdateMenuPriceResponse {
+  int32 requestId = 1;
+  string status = 2;
+  string message = 3;
+}
+
+message AddMenuItemRequest {
+  int32 requestId = 1;
+  string userId = 2;
+  string role = 3;
+  MenuItem item = 4;
+}
+
+message AddMenuItemResponse {
+  int32 requestId = 1;
+  string status = 2;
+  string message = 3;
+}
+
+message RemoveMenuItemRequest {
+  int32 requestId = 1;
+  string userId = 2;
+  string role = 3;
+  string itemId = 4;
+}
+
+message RemoveMenuItemResponse {
+  int32 requestId = 1;
+  string status = 2;
+  string message = 3;
+}
+
+message UpdateMenuItemRequest {
+  int32 requestId = 1;
+  string userId = 2;
+  string role = 3;
+  MenuItem item = 4;
+}
+
+message UpdateMenuItemResponse {
   int32 requestId = 1;
   string status = 2;
   string message = 3;
@@ -99,12 +147,30 @@ message TakeoutOrderRequest {
   repeated OrderLineItem items = 5;
 }
 
+message OnlineOrderRequest {
+  int32 requestId = 1;
+  string userId = 2;
+  string role = 3;
+  string customerName = 4;
+  repeated OrderLineItem items = 5;
+  string pickupInfo = 6;
+}
+
 message OrderResponse {
   int32 requestId = 1;
   string status = 2;
   string message = 3;
   string orderId = 4;
   double total = 5;
+}
+
+enum OrderStatus {
+  ORDER_STATUS_UNSPECIFIED = 0;
+  RECEIVED = 1;
+  reserved 2;
+  READY = 3;
+  COMPLETED = 4;
+  PICKED_UP = 5;
 }
 
 message OrderSummary {
@@ -114,6 +180,10 @@ message OrderSummary {
   int32 tableNumber = 4;
   string guestName = 5;
   double total = 6;
+  string createdTime = 7;
+  OrderStatus orderStatus = 8;
+  string pickupInfo = 9;
+  string customerName = 10;
 }
 
 message ListOrdersRequest {
@@ -127,6 +197,60 @@ message ListOrdersResponse {
   string status = 2;
   string message = 3;
   repeated OrderSummary orders = 4;
+}
+
+message UpdateOrderStatusRequest {
+  int32 requestId = 1;
+  string userId = 2;
+  string role = 3;
+  string orderId = 4;
+  OrderStatus newStatus = 5;
+}
+
+message UpdateOrderStatusResponse {
+  int32 requestId = 1;
+  string status = 2;
+  string message = 3;
+  string orderId = 4;
+  string previousStatus = 5;
+  string currentStatus = 6;
+  OrderStatus currentStatusCode = 7;
+}
+
+message GetOrderStatusRequest {
+  int32 requestId = 1;
+  string userId = 2;
+  string role = 3;
+  string orderId = 4;
+}
+
+message GetOrderStatusResponse {
+  int32 requestId = 1;
+  string status = 2;
+  string message = 3;
+  string orderId = 4;
+  string currentStatus = 5;
+  OrderStatus currentStatusCode = 6;
+  string orderType = 7;
+  string createdTime = 8;
+}
+
+message GenerateReportRequest {
+  int32 requestId = 1;
+  string userId = 2;
+  string role = 3;
+}
+
+message GenerateReportResponse {
+  int32 requestId = 1;
+  string status = 2;
+  string message = 3;
+  int32 totalOrders = 4;
+  double totalRevenue = 5;
+  int32 receivedCount = 6;
+  int32 readyCount = 7;
+  int32 completedCount = 8;
+  int32 pickedUpCount = 9;
 }
 
 message MarkOrderReadyRequest {

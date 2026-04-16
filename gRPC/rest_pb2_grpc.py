@@ -55,6 +55,21 @@ class RestaurantServiceStub(object):
                 request_serializer=rest__pb2.UpdateMenuPriceRequest.SerializeToString,
                 response_deserializer=rest__pb2.UpdateMenuPriceResponse.FromString,
                 _registered_method=True)
+        self.add_menu_item = channel.unary_unary(
+                '/restaurant.RestaurantService/add_menu_item',
+                request_serializer=rest__pb2.AddMenuItemRequest.SerializeToString,
+                response_deserializer=rest__pb2.AddMenuItemResponse.FromString,
+                _registered_method=True)
+        self.remove_menu_item = channel.unary_unary(
+                '/restaurant.RestaurantService/remove_menu_item',
+                request_serializer=rest__pb2.RemoveMenuItemRequest.SerializeToString,
+                response_deserializer=rest__pb2.RemoveMenuItemResponse.FromString,
+                _registered_method=True)
+        self.update_menu_item = channel.unary_unary(
+                '/restaurant.RestaurantService/update_menu_item',
+                request_serializer=rest__pb2.UpdateMenuItemRequest.SerializeToString,
+                response_deserializer=rest__pb2.UpdateMenuItemResponse.FromString,
+                _registered_method=True)
         self.place_dine_in_order = channel.unary_unary(
                 '/restaurant.RestaurantService/place_dine_in_order',
                 request_serializer=rest__pb2.DineInOrderRequest.SerializeToString,
@@ -65,10 +80,30 @@ class RestaurantServiceStub(object):
                 request_serializer=rest__pb2.TakeoutOrderRequest.SerializeToString,
                 response_deserializer=rest__pb2.OrderResponse.FromString,
                 _registered_method=True)
+        self.place_online_order = channel.unary_unary(
+                '/restaurant.RestaurantService/place_online_order',
+                request_serializer=rest__pb2.OnlineOrderRequest.SerializeToString,
+                response_deserializer=rest__pb2.OrderResponse.FromString,
+                _registered_method=True)
         self.list_orders = channel.unary_unary(
                 '/restaurant.RestaurantService/list_orders',
                 request_serializer=rest__pb2.ListOrdersRequest.SerializeToString,
                 response_deserializer=rest__pb2.ListOrdersResponse.FromString,
+                _registered_method=True)
+        self.update_order_status = channel.unary_unary(
+                '/restaurant.RestaurantService/update_order_status',
+                request_serializer=rest__pb2.UpdateOrderStatusRequest.SerializeToString,
+                response_deserializer=rest__pb2.UpdateOrderStatusResponse.FromString,
+                _registered_method=True)
+        self.get_order_status = channel.unary_unary(
+                '/restaurant.RestaurantService/get_order_status',
+                request_serializer=rest__pb2.GetOrderStatusRequest.SerializeToString,
+                response_deserializer=rest__pb2.GetOrderStatusResponse.FromString,
+                _registered_method=True)
+        self.generate_report = channel.unary_unary(
+                '/restaurant.RestaurantService/generate_report',
+                request_serializer=rest__pb2.GenerateReportRequest.SerializeToString,
+                response_deserializer=rest__pb2.GenerateReportResponse.FromString,
                 _registered_method=True)
         self.mark_order_ready = channel.unary_unary(
                 '/restaurant.RestaurantService/mark_order_ready',
@@ -105,6 +140,24 @@ class RestaurantServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def add_menu_item(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def remove_menu_item(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def update_menu_item(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
     def place_dine_in_order(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -117,7 +170,31 @@ class RestaurantServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def place_online_order(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
     def list_orders(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def update_order_status(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def get_order_status(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def generate_report(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -152,6 +229,21 @@ def add_RestaurantServiceServicer_to_server(servicer, server):
                     request_deserializer=rest__pb2.UpdateMenuPriceRequest.FromString,
                     response_serializer=rest__pb2.UpdateMenuPriceResponse.SerializeToString,
             ),
+            'add_menu_item': grpc.unary_unary_rpc_method_handler(
+                    servicer.add_menu_item,
+                    request_deserializer=rest__pb2.AddMenuItemRequest.FromString,
+                    response_serializer=rest__pb2.AddMenuItemResponse.SerializeToString,
+            ),
+            'remove_menu_item': grpc.unary_unary_rpc_method_handler(
+                    servicer.remove_menu_item,
+                    request_deserializer=rest__pb2.RemoveMenuItemRequest.FromString,
+                    response_serializer=rest__pb2.RemoveMenuItemResponse.SerializeToString,
+            ),
+            'update_menu_item': grpc.unary_unary_rpc_method_handler(
+                    servicer.update_menu_item,
+                    request_deserializer=rest__pb2.UpdateMenuItemRequest.FromString,
+                    response_serializer=rest__pb2.UpdateMenuItemResponse.SerializeToString,
+            ),
             'place_dine_in_order': grpc.unary_unary_rpc_method_handler(
                     servicer.place_dine_in_order,
                     request_deserializer=rest__pb2.DineInOrderRequest.FromString,
@@ -162,10 +254,30 @@ def add_RestaurantServiceServicer_to_server(servicer, server):
                     request_deserializer=rest__pb2.TakeoutOrderRequest.FromString,
                     response_serializer=rest__pb2.OrderResponse.SerializeToString,
             ),
+            'place_online_order': grpc.unary_unary_rpc_method_handler(
+                    servicer.place_online_order,
+                    request_deserializer=rest__pb2.OnlineOrderRequest.FromString,
+                    response_serializer=rest__pb2.OrderResponse.SerializeToString,
+            ),
             'list_orders': grpc.unary_unary_rpc_method_handler(
                     servicer.list_orders,
                     request_deserializer=rest__pb2.ListOrdersRequest.FromString,
                     response_serializer=rest__pb2.ListOrdersResponse.SerializeToString,
+            ),
+            'update_order_status': grpc.unary_unary_rpc_method_handler(
+                    servicer.update_order_status,
+                    request_deserializer=rest__pb2.UpdateOrderStatusRequest.FromString,
+                    response_serializer=rest__pb2.UpdateOrderStatusResponse.SerializeToString,
+            ),
+            'get_order_status': grpc.unary_unary_rpc_method_handler(
+                    servicer.get_order_status,
+                    request_deserializer=rest__pb2.GetOrderStatusRequest.FromString,
+                    response_serializer=rest__pb2.GetOrderStatusResponse.SerializeToString,
+            ),
+            'generate_report': grpc.unary_unary_rpc_method_handler(
+                    servicer.generate_report,
+                    request_deserializer=rest__pb2.GenerateReportRequest.FromString,
+                    response_serializer=rest__pb2.GenerateReportResponse.SerializeToString,
             ),
             'mark_order_ready': grpc.unary_unary_rpc_method_handler(
                     servicer.mark_order_ready,
@@ -293,6 +405,87 @@ class RestaurantService(object):
             _registered_method=True)
 
     @staticmethod
+    def add_menu_item(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/restaurant.RestaurantService/add_menu_item',
+            rest__pb2.AddMenuItemRequest.SerializeToString,
+            rest__pb2.AddMenuItemResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def remove_menu_item(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/restaurant.RestaurantService/remove_menu_item',
+            rest__pb2.RemoveMenuItemRequest.SerializeToString,
+            rest__pb2.RemoveMenuItemResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def update_menu_item(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/restaurant.RestaurantService/update_menu_item',
+            rest__pb2.UpdateMenuItemRequest.SerializeToString,
+            rest__pb2.UpdateMenuItemResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
     def place_dine_in_order(request,
             target,
             options=(),
@@ -347,6 +540,33 @@ class RestaurantService(object):
             _registered_method=True)
 
     @staticmethod
+    def place_online_order(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/restaurant.RestaurantService/place_online_order',
+            rest__pb2.OnlineOrderRequest.SerializeToString,
+            rest__pb2.OrderResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
     def list_orders(request,
             target,
             options=(),
@@ -363,6 +583,87 @@ class RestaurantService(object):
             '/restaurant.RestaurantService/list_orders',
             rest__pb2.ListOrdersRequest.SerializeToString,
             rest__pb2.ListOrdersResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def update_order_status(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/restaurant.RestaurantService/update_order_status',
+            rest__pb2.UpdateOrderStatusRequest.SerializeToString,
+            rest__pb2.UpdateOrderStatusResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def get_order_status(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/restaurant.RestaurantService/get_order_status',
+            rest__pb2.GetOrderStatusRequest.SerializeToString,
+            rest__pb2.GetOrderStatusResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def generate_report(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/restaurant.RestaurantService/generate_report',
+            rest__pb2.GenerateReportRequest.SerializeToString,
+            rest__pb2.GenerateReportResponse.FromString,
             options,
             channel_credentials,
             insecure,

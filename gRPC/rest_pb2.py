@@ -24,13 +24,15 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\nrest.proto\x12\nrestaurant\"?\n\x0cLoginRequest\x12\x11\n\trequestId\x18\x01 \x01(\x05\x12\x0e\n\x06userId\x18\x02 \x01(\t\x12\x0c\n\x04role\x18\x03 \x01(\t\"C\n\rLoginResponse\x12\x11\n\trequestId\x18\x01 \x01(\x05\x12\x0e\n\x06status\x18\x02 \x01(\t\x12\x0f\n\x07message\x18\x03 \x01(\t\"@\n\rLogoutRequest\x12\x11\n\trequestId\x18\x01 \x01(\x05\x12\x0e\n\x06userId\x18\x02 \x01(\t\x12\x0c\n\x04role\x18\x03 \x01(\t\"D\n\x0eLogoutResponse\x12\x11\n\trequestId\x18\x01 \x01(\x05\x12\x0e\n\x06status\x18\x02 \x01(\t\x12\x0f\n\x07message\x18\x03 \x01(\t\">\n\x0bMenuRequest\x12\x11\n\trequestId\x18\x01 \x01(\x05\x12\x0e\n\x06userId\x18\x02 \x01(\t\x12\x0c\n\x04role\x18\x03 \x01(\t\"I\n\x08MenuItem\x12\x0e\n\x06itemId\x18\x01 \x01(\t\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x10\n\x08\x63\x61tegory\x18\x03 \x01(\t\x12\r\n\x05price\x18\x04 \x01(\x01\"g\n\x0cMenuResponse\x12\x11\n\trequestId\x18\x01 \x01(\x05\x12\x0e\n\x06status\x18\x02 \x01(\t\x12\x0f\n\x07message\x18\x03 \x01(\t\x12#\n\x05items\x18\x04 \x03(\x0b\x32\x14.restaurant.MenuItem\"k\n\x16UpdateMenuPriceRequest\x12\x11\n\trequestId\x18\x01 \x01(\x05\x12\x0e\n\x06userId\x18\x02 \x01(\t\x12\x0c\n\x04role\x18\x03 \x01(\t\x12\x0e\n\x06itemId\x18\x04 \x01(\t\x12\x10\n\x08newPrice\x18\x05 \x01(\x01\"M\n\x17UpdateMenuPriceResponse\x12\x11\n\trequestId\x18\x01 \x01(\x05\x12\x0e\n\x06status\x18\x02 \x01(\t\x12\x0f\n\x07message\x18\x03 \x01(\t\"2\n\nGuestOrder\x12\x13\n\x0bguestNumber\x18\x01 \x01(\x05\x12\x0f\n\x07itemIds\x18\x02 \x03(\t\"\x96\x01\n\x12\x44ineInOrderRequest\x12\x11\n\trequestId\x18\x01 \x01(\x05\x12\x0e\n\x06userId\x18\x02 \x01(\t\x12\x0c\n\x04role\x18\x03 \x01(\t\x12\x13\n\x0btableNumber\x18\x04 \x01(\x05\x12\x12\n\nguestCount\x18\x05 \x01(\x05\x12&\n\x06guests\x18\x06 \x03(\x0b\x32\x16.restaurant.GuestOrder\"1\n\rOrderLineItem\x12\x0e\n\x06itemId\x18\x01 \x01(\t\x12\x10\n\x08quantity\x18\x02 \x01(\x05\"\x83\x01\n\x13TakeoutOrderRequest\x12\x11\n\trequestId\x18\x01 \x01(\x05\x12\x0e\n\x06userId\x18\x02 \x01(\t\x12\x0c\n\x04role\x18\x03 \x01(\t\x12\x11\n\tguestName\x18\x04 \x01(\t\x12(\n\x05items\x18\x05 \x03(\x0b\x32\x19.restaurant.OrderLineItem\"c\n\rOrderResponse\x12\x11\n\trequestId\x18\x01 \x01(\x05\x12\x0e\n\x06status\x18\x02 \x01(\t\x12\x0f\n\x07message\x18\x03 \x01(\t\x12\x0f\n\x07orderId\x18\x04 \x01(\t\x12\r\n\x05total\x18\x05 \x01(\x01\"y\n\x0cOrderSummary\x12\x0f\n\x07orderId\x18\x01 \x01(\t\x12\x11\n\torderType\x18\x02 \x01(\t\x12\x0e\n\x06status\x18\x03 \x01(\t\x12\x13\n\x0btableNumber\x18\x04 \x01(\x05\x12\x11\n\tguestName\x18\x05 \x01(\t\x12\r\n\x05total\x18\x06 \x01(\x01\"D\n\x11ListOrdersRequest\x12\x11\n\trequestId\x18\x01 \x01(\x05\x12\x0e\n\x06userId\x18\x02 \x01(\t\x12\x0c\n\x04role\x18\x03 \x01(\t\"r\n\x12ListOrdersResponse\x12\x11\n\trequestId\x18\x01 \x01(\x05\x12\x0e\n\x06status\x18\x02 \x01(\t\x12\x0f\n\x07message\x18\x03 \x01(\t\x12(\n\x06orders\x18\x04 \x03(\x0b\x32\x18.restaurant.OrderSummary\"Y\n\x15MarkOrderReadyRequest\x12\x11\n\trequestId\x18\x01 \x01(\x05\x12\x0e\n\x06userId\x18\x02 \x01(\t\x12\x0c\n\x04role\x18\x03 \x01(\t\x12\x0f\n\x07orderId\x18\x04 \x01(\t\"L\n\x16MarkOrderReadyResponse\x12\x11\n\trequestId\x18\x01 \x01(\x05\x12\x0e\n\x06status\x18\x02 \x01(\t\x12\x0f\n\x07message\x18\x03 \x01(\t2\xfd\x04\n\x11RestaurantService\x12<\n\x05login\x12\x18.restaurant.LoginRequest\x1a\x19.restaurant.LoginResponse\x12?\n\x06logout\x12\x19.restaurant.LogoutRequest\x1a\x1a.restaurant.LogoutResponse\x12=\n\x08get_menu\x12\x17.restaurant.MenuRequest\x1a\x18.restaurant.MenuResponse\x12\\\n\x11update_menu_price\x12\".restaurant.UpdateMenuPriceRequest\x1a#.restaurant.UpdateMenuPriceResponse\x12P\n\x13place_dine_in_order\x12\x1e.restaurant.DineInOrderRequest\x1a\x19.restaurant.OrderResponse\x12Q\n\x13place_takeout_order\x12\x1f.restaurant.TakeoutOrderRequest\x1a\x19.restaurant.OrderResponse\x12L\n\x0blist_orders\x12\x1d.restaurant.ListOrdersRequest\x1a\x1e.restaurant.ListOrdersResponse\x12Y\n\x10mark_order_ready\x12!.restaurant.MarkOrderReadyRequest\x1a\".restaurant.MarkOrderReadyResponseb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\nrest.proto\x12\nrestaurant\"?\n\x0cLoginRequest\x12\x11\n\trequestId\x18\x01 \x01(\x05\x12\x0e\n\x06userId\x18\x02 \x01(\t\x12\x0c\n\x04role\x18\x03 \x01(\t\"C\n\rLoginResponse\x12\x11\n\trequestId\x18\x01 \x01(\x05\x12\x0e\n\x06status\x18\x02 \x01(\t\x12\x0f\n\x07message\x18\x03 \x01(\t\"@\n\rLogoutRequest\x12\x11\n\trequestId\x18\x01 \x01(\x05\x12\x0e\n\x06userId\x18\x02 \x01(\t\x12\x0c\n\x04role\x18\x03 \x01(\t\"D\n\x0eLogoutResponse\x12\x11\n\trequestId\x18\x01 \x01(\x05\x12\x0e\n\x06status\x18\x02 \x01(\t\x12\x0f\n\x07message\x18\x03 \x01(\t\">\n\x0bMenuRequest\x12\x11\n\trequestId\x18\x01 \x01(\x05\x12\x0e\n\x06userId\x18\x02 \x01(\t\x12\x0c\n\x04role\x18\x03 \x01(\t\"t\n\x08MenuItem\x12\x0e\n\x06itemId\x18\x01 \x01(\t\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x10\n\x08\x63\x61tegory\x18\x03 \x01(\t\x12\r\n\x05price\x18\x04 \x01(\x01\x12\x13\n\x0b\x64\x65scription\x18\x05 \x01(\t\x12\x14\n\x0c\x61vailability\x18\x06 \x01(\x08\"g\n\x0cMenuResponse\x12\x11\n\trequestId\x18\x01 \x01(\x05\x12\x0e\n\x06status\x18\x02 \x01(\t\x12\x0f\n\x07message\x18\x03 \x01(\t\x12#\n\x05items\x18\x04 \x03(\x0b\x32\x14.restaurant.MenuItem\"k\n\x16UpdateMenuPriceRequest\x12\x11\n\trequestId\x18\x01 \x01(\x05\x12\x0e\n\x06userId\x18\x02 \x01(\t\x12\x0c\n\x04role\x18\x03 \x01(\t\x12\x0e\n\x06itemId\x18\x04 \x01(\t\x12\x10\n\x08newPrice\x18\x05 \x01(\x01\"M\n\x17UpdateMenuPriceResponse\x12\x11\n\trequestId\x18\x01 \x01(\x05\x12\x0e\n\x06status\x18\x02 \x01(\t\x12\x0f\n\x07message\x18\x03 \x01(\t\"i\n\x12\x41\x64\x64MenuItemRequest\x12\x11\n\trequestId\x18\x01 \x01(\x05\x12\x0e\n\x06userId\x18\x02 \x01(\t\x12\x0c\n\x04role\x18\x03 \x01(\t\x12\"\n\x04item\x18\x04 \x01(\x0b\x32\x14.restaurant.MenuItem\"I\n\x13\x41\x64\x64MenuItemResponse\x12\x11\n\trequestId\x18\x01 \x01(\x05\x12\x0e\n\x06status\x18\x02 \x01(\t\x12\x0f\n\x07message\x18\x03 \x01(\t\"X\n\x15RemoveMenuItemRequest\x12\x11\n\trequestId\x18\x01 \x01(\x05\x12\x0e\n\x06userId\x18\x02 \x01(\t\x12\x0c\n\x04role\x18\x03 \x01(\t\x12\x0e\n\x06itemId\x18\x04 \x01(\t\"L\n\x16RemoveMenuItemResponse\x12\x11\n\trequestId\x18\x01 \x01(\x05\x12\x0e\n\x06status\x18\x02 \x01(\t\x12\x0f\n\x07message\x18\x03 \x01(\t\"l\n\x15UpdateMenuItemRequest\x12\x11\n\trequestId\x18\x01 \x01(\x05\x12\x0e\n\x06userId\x18\x02 \x01(\t\x12\x0c\n\x04role\x18\x03 \x01(\t\x12\"\n\x04item\x18\x04 \x01(\x0b\x32\x14.restaurant.MenuItem\"L\n\x16UpdateMenuItemResponse\x12\x11\n\trequestId\x18\x01 \x01(\x05\x12\x0e\n\x06status\x18\x02 \x01(\t\x12\x0f\n\x07message\x18\x03 \x01(\t\"2\n\nGuestOrder\x12\x13\n\x0bguestNumber\x18\x01 \x01(\x05\x12\x0f\n\x07itemIds\x18\x02 \x03(\t\"\x96\x01\n\x12\x44ineInOrderRequest\x12\x11\n\trequestId\x18\x01 \x01(\x05\x12\x0e\n\x06userId\x18\x02 \x01(\t\x12\x0c\n\x04role\x18\x03 \x01(\t\x12\x13\n\x0btableNumber\x18\x04 \x01(\x05\x12\x12\n\nguestCount\x18\x05 \x01(\x05\x12&\n\x06guests\x18\x06 \x03(\x0b\x32\x16.restaurant.GuestOrder\"1\n\rOrderLineItem\x12\x0e\n\x06itemId\x18\x01 \x01(\t\x12\x10\n\x08quantity\x18\x02 \x01(\x05\"\x83\x01\n\x13TakeoutOrderRequest\x12\x11\n\trequestId\x18\x01 \x01(\x05\x12\x0e\n\x06userId\x18\x02 \x01(\t\x12\x0c\n\x04role\x18\x03 \x01(\t\x12\x11\n\tguestName\x18\x04 \x01(\t\x12(\n\x05items\x18\x05 \x03(\x0b\x32\x19.restaurant.OrderLineItem\"\x99\x01\n\x12OnlineOrderRequest\x12\x11\n\trequestId\x18\x01 \x01(\x05\x12\x0e\n\x06userId\x18\x02 \x01(\t\x12\x0c\n\x04role\x18\x03 \x01(\t\x12\x14\n\x0c\x63ustomerName\x18\x04 \x01(\t\x12(\n\x05items\x18\x05 \x03(\x0b\x32\x19.restaurant.OrderLineItem\x12\x12\n\npickupInfo\x18\x06 \x01(\t\"c\n\rOrderResponse\x12\x11\n\trequestId\x18\x01 \x01(\x05\x12\x0e\n\x06status\x18\x02 \x01(\t\x12\x0f\n\x07message\x18\x03 \x01(\t\x12\x0f\n\x07orderId\x18\x04 \x01(\t\x12\r\n\x05total\x18\x05 \x01(\x01\"\xe6\x01\n\x0cOrderSummary\x12\x0f\n\x07orderId\x18\x01 \x01(\t\x12\x11\n\torderType\x18\x02 \x01(\t\x12\x0e\n\x06status\x18\x03 \x01(\t\x12\x13\n\x0btableNumber\x18\x04 \x01(\x05\x12\x11\n\tguestName\x18\x05 \x01(\t\x12\r\n\x05total\x18\x06 \x01(\x01\x12\x13\n\x0b\x63reatedTime\x18\x07 \x01(\t\x12,\n\x0borderStatus\x18\x08 \x01(\x0e\x32\x17.restaurant.OrderStatus\x12\x12\n\npickupInfo\x18\t \x01(\t\x12\x14\n\x0c\x63ustomerName\x18\n \x01(\t\"D\n\x11ListOrdersRequest\x12\x11\n\trequestId\x18\x01 \x01(\x05\x12\x0e\n\x06userId\x18\x02 \x01(\t\x12\x0c\n\x04role\x18\x03 \x01(\t\"r\n\x12ListOrdersResponse\x12\x11\n\trequestId\x18\x01 \x01(\x05\x12\x0e\n\x06status\x18\x02 \x01(\t\x12\x0f\n\x07message\x18\x03 \x01(\t\x12(\n\x06orders\x18\x04 \x03(\x0b\x32\x18.restaurant.OrderSummary\"\x88\x01\n\x18UpdateOrderStatusRequest\x12\x11\n\trequestId\x18\x01 \x01(\x05\x12\x0e\n\x06userId\x18\x02 \x01(\t\x12\x0c\n\x04role\x18\x03 \x01(\t\x12\x0f\n\x07orderId\x18\x04 \x01(\t\x12*\n\tnewStatus\x18\x05 \x01(\x0e\x32\x17.restaurant.OrderStatus\"\xc3\x01\n\x19UpdateOrderStatusResponse\x12\x11\n\trequestId\x18\x01 \x01(\x05\x12\x0e\n\x06status\x18\x02 \x01(\t\x12\x0f\n\x07message\x18\x03 \x01(\t\x12\x0f\n\x07orderId\x18\x04 \x01(\t\x12\x16\n\x0epreviousStatus\x18\x05 \x01(\t\x12\x15\n\rcurrentStatus\x18\x06 \x01(\t\x12\x32\n\x11\x63urrentStatusCode\x18\x07 \x01(\x0e\x32\x17.restaurant.OrderStatus\"Y\n\x15GetOrderStatusRequest\x12\x11\n\trequestId\x18\x01 \x01(\x05\x12\x0e\n\x06userId\x18\x02 \x01(\t\x12\x0c\n\x04role\x18\x03 \x01(\t\x12\x0f\n\x07orderId\x18\x04 \x01(\t\"\xd0\x01\n\x16GetOrderStatusResponse\x12\x11\n\trequestId\x18\x01 \x01(\x05\x12\x0e\n\x06status\x18\x02 \x01(\t\x12\x0f\n\x07message\x18\x03 \x01(\t\x12\x0f\n\x07orderId\x18\x04 \x01(\t\x12\x15\n\rcurrentStatus\x18\x05 \x01(\t\x12\x32\n\x11\x63urrentStatusCode\x18\x06 \x01(\x0e\x32\x17.restaurant.OrderStatus\x12\x11\n\torderType\x18\x07 \x01(\t\x12\x13\n\x0b\x63reatedTime\x18\x08 \x01(\t\"H\n\x15GenerateReportRequest\x12\x11\n\trequestId\x18\x01 \x01(\x05\x12\x0e\n\x06userId\x18\x02 \x01(\t\x12\x0c\n\x04role\x18\x03 \x01(\t\"\xd1\x01\n\x16GenerateReportResponse\x12\x11\n\trequestId\x18\x01 \x01(\x05\x12\x0e\n\x06status\x18\x02 \x01(\t\x12\x0f\n\x07message\x18\x03 \x01(\t\x12\x13\n\x0btotalOrders\x18\x04 \x01(\x05\x12\x14\n\x0ctotalRevenue\x18\x05 \x01(\x01\x12\x15\n\rreceivedCount\x18\x06 \x01(\x05\x12\x12\n\nreadyCount\x18\x07 \x01(\x05\x12\x16\n\x0e\x63ompletedCount\x18\x08 \x01(\x05\x12\x15\n\rpickedUpCount\x18\t \x01(\x05\"Y\n\x15MarkOrderReadyRequest\x12\x11\n\trequestId\x18\x01 \x01(\x05\x12\x0e\n\x06userId\x18\x02 \x01(\t\x12\x0c\n\x04role\x18\x03 \x01(\t\x12\x0f\n\x07orderId\x18\x04 \x01(\t\"L\n\x16MarkOrderReadyResponse\x12\x11\n\trequestId\x18\x01 \x01(\x05\x12\x0e\n\x06status\x18\x02 \x01(\t\x12\x0f\n\x07message\x18\x03 \x01(\t*h\n\x0bOrderStatus\x12\x1c\n\x18ORDER_STATUS_UNSPECIFIED\x10\x00\x12\x0c\n\x08RECEIVED\x10\x01\x12\t\n\x05READY\x10\x03\x12\r\n\tCOMPLETED\x10\x04\x12\r\n\tPICKED_UP\x10\x05\"\x04\x08\x02\x10\x02\x32\xef\t\n\x11RestaurantService\x12<\n\x05login\x12\x18.restaurant.LoginRequest\x1a\x19.restaurant.LoginResponse\x12?\n\x06logout\x12\x19.restaurant.LogoutRequest\x1a\x1a.restaurant.LogoutResponse\x12=\n\x08get_menu\x12\x17.restaurant.MenuRequest\x1a\x18.restaurant.MenuResponse\x12\\\n\x11update_menu_price\x12\".restaurant.UpdateMenuPriceRequest\x1a#.restaurant.UpdateMenuPriceResponse\x12P\n\radd_menu_item\x12\x1e.restaurant.AddMenuItemRequest\x1a\x1f.restaurant.AddMenuItemResponse\x12Y\n\x10remove_menu_item\x12!.restaurant.RemoveMenuItemRequest\x1a\".restaurant.RemoveMenuItemResponse\x12Y\n\x10update_menu_item\x12!.restaurant.UpdateMenuItemRequest\x1a\".restaurant.UpdateMenuItemResponse\x12P\n\x13place_dine_in_order\x12\x1e.restaurant.DineInOrderRequest\x1a\x19.restaurant.OrderResponse\x12Q\n\x13place_takeout_order\x12\x1f.restaurant.TakeoutOrderRequest\x1a\x19.restaurant.OrderResponse\x12O\n\x12place_online_order\x12\x1e.restaurant.OnlineOrderRequest\x1a\x19.restaurant.OrderResponse\x12L\n\x0blist_orders\x12\x1d.restaurant.ListOrdersRequest\x1a\x1e.restaurant.ListOrdersResponse\x12\x62\n\x13update_order_status\x12$.restaurant.UpdateOrderStatusRequest\x1a%.restaurant.UpdateOrderStatusResponse\x12Y\n\x10get_order_status\x12!.restaurant.GetOrderStatusRequest\x1a\".restaurant.GetOrderStatusResponse\x12X\n\x0fgenerate_report\x12!.restaurant.GenerateReportRequest\x1a\".restaurant.GenerateReportResponse\x12Y\n\x10mark_order_ready\x12!.restaurant.MarkOrderReadyRequest\x1a\".restaurant.MarkOrderReadyResponseb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'rest_pb2', _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
   DESCRIPTOR._loaded_options = None
+  _globals['_ORDERSTATUS']._serialized_start=3469
+  _globals['_ORDERSTATUS']._serialized_end=3573
   _globals['_LOGINREQUEST']._serialized_start=26
   _globals['_LOGINREQUEST']._serialized_end=89
   _globals['_LOGINRESPONSE']._serialized_start=91
@@ -42,33 +44,59 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_MENUREQUEST']._serialized_start=296
   _globals['_MENUREQUEST']._serialized_end=358
   _globals['_MENUITEM']._serialized_start=360
-  _globals['_MENUITEM']._serialized_end=433
-  _globals['_MENURESPONSE']._serialized_start=435
-  _globals['_MENURESPONSE']._serialized_end=538
-  _globals['_UPDATEMENUPRICEREQUEST']._serialized_start=540
-  _globals['_UPDATEMENUPRICEREQUEST']._serialized_end=647
-  _globals['_UPDATEMENUPRICERESPONSE']._serialized_start=649
-  _globals['_UPDATEMENUPRICERESPONSE']._serialized_end=726
-  _globals['_GUESTORDER']._serialized_start=728
-  _globals['_GUESTORDER']._serialized_end=778
-  _globals['_DINEINORDERREQUEST']._serialized_start=781
-  _globals['_DINEINORDERREQUEST']._serialized_end=931
-  _globals['_ORDERLINEITEM']._serialized_start=933
-  _globals['_ORDERLINEITEM']._serialized_end=982
-  _globals['_TAKEOUTORDERREQUEST']._serialized_start=985
-  _globals['_TAKEOUTORDERREQUEST']._serialized_end=1116
-  _globals['_ORDERRESPONSE']._serialized_start=1118
-  _globals['_ORDERRESPONSE']._serialized_end=1217
-  _globals['_ORDERSUMMARY']._serialized_start=1219
-  _globals['_ORDERSUMMARY']._serialized_end=1340
-  _globals['_LISTORDERSREQUEST']._serialized_start=1342
-  _globals['_LISTORDERSREQUEST']._serialized_end=1410
-  _globals['_LISTORDERSRESPONSE']._serialized_start=1412
-  _globals['_LISTORDERSRESPONSE']._serialized_end=1526
-  _globals['_MARKORDERREADYREQUEST']._serialized_start=1528
-  _globals['_MARKORDERREADYREQUEST']._serialized_end=1617
-  _globals['_MARKORDERREADYRESPONSE']._serialized_start=1619
-  _globals['_MARKORDERREADYRESPONSE']._serialized_end=1695
-  _globals['_RESTAURANTSERVICE']._serialized_start=1698
-  _globals['_RESTAURANTSERVICE']._serialized_end=2335
+  _globals['_MENUITEM']._serialized_end=476
+  _globals['_MENURESPONSE']._serialized_start=478
+  _globals['_MENURESPONSE']._serialized_end=581
+  _globals['_UPDATEMENUPRICEREQUEST']._serialized_start=583
+  _globals['_UPDATEMENUPRICEREQUEST']._serialized_end=690
+  _globals['_UPDATEMENUPRICERESPONSE']._serialized_start=692
+  _globals['_UPDATEMENUPRICERESPONSE']._serialized_end=769
+  _globals['_ADDMENUITEMREQUEST']._serialized_start=771
+  _globals['_ADDMENUITEMREQUEST']._serialized_end=876
+  _globals['_ADDMENUITEMRESPONSE']._serialized_start=878
+  _globals['_ADDMENUITEMRESPONSE']._serialized_end=951
+  _globals['_REMOVEMENUITEMREQUEST']._serialized_start=953
+  _globals['_REMOVEMENUITEMREQUEST']._serialized_end=1041
+  _globals['_REMOVEMENUITEMRESPONSE']._serialized_start=1043
+  _globals['_REMOVEMENUITEMRESPONSE']._serialized_end=1119
+  _globals['_UPDATEMENUITEMREQUEST']._serialized_start=1121
+  _globals['_UPDATEMENUITEMREQUEST']._serialized_end=1229
+  _globals['_UPDATEMENUITEMRESPONSE']._serialized_start=1231
+  _globals['_UPDATEMENUITEMRESPONSE']._serialized_end=1307
+  _globals['_GUESTORDER']._serialized_start=1309
+  _globals['_GUESTORDER']._serialized_end=1359
+  _globals['_DINEINORDERREQUEST']._serialized_start=1362
+  _globals['_DINEINORDERREQUEST']._serialized_end=1512
+  _globals['_ORDERLINEITEM']._serialized_start=1514
+  _globals['_ORDERLINEITEM']._serialized_end=1563
+  _globals['_TAKEOUTORDERREQUEST']._serialized_start=1566
+  _globals['_TAKEOUTORDERREQUEST']._serialized_end=1697
+  _globals['_ONLINEORDERREQUEST']._serialized_start=1700
+  _globals['_ONLINEORDERREQUEST']._serialized_end=1853
+  _globals['_ORDERRESPONSE']._serialized_start=1855
+  _globals['_ORDERRESPONSE']._serialized_end=1954
+  _globals['_ORDERSUMMARY']._serialized_start=1957
+  _globals['_ORDERSUMMARY']._serialized_end=2187
+  _globals['_LISTORDERSREQUEST']._serialized_start=2189
+  _globals['_LISTORDERSREQUEST']._serialized_end=2257
+  _globals['_LISTORDERSRESPONSE']._serialized_start=2259
+  _globals['_LISTORDERSRESPONSE']._serialized_end=2373
+  _globals['_UPDATEORDERSTATUSREQUEST']._serialized_start=2376
+  _globals['_UPDATEORDERSTATUSREQUEST']._serialized_end=2512
+  _globals['_UPDATEORDERSTATUSRESPONSE']._serialized_start=2515
+  _globals['_UPDATEORDERSTATUSRESPONSE']._serialized_end=2710
+  _globals['_GETORDERSTATUSREQUEST']._serialized_start=2712
+  _globals['_GETORDERSTATUSREQUEST']._serialized_end=2801
+  _globals['_GETORDERSTATUSRESPONSE']._serialized_start=2804
+  _globals['_GETORDERSTATUSRESPONSE']._serialized_end=3012
+  _globals['_GENERATEREPORTREQUEST']._serialized_start=3014
+  _globals['_GENERATEREPORTREQUEST']._serialized_end=3086
+  _globals['_GENERATEREPORTRESPONSE']._serialized_start=3089
+  _globals['_GENERATEREPORTRESPONSE']._serialized_end=3298
+  _globals['_MARKORDERREADYREQUEST']._serialized_start=3300
+  _globals['_MARKORDERREADYREQUEST']._serialized_end=3389
+  _globals['_MARKORDERREADYRESPONSE']._serialized_start=3391
+  _globals['_MARKORDERREADYRESPONSE']._serialized_end=3467
+  _globals['_RESTAURANTSERVICE']._serialized_start=3576
+  _globals['_RESTAURANTSERVICE']._serialized_end=4839
 # @@protoc_insertion_point(module_scope)
