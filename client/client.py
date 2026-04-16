@@ -7,8 +7,8 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../gRPC
 import rest_pb2
 import rest_pb2_grpc
 
-USERS = {"m1": "manager", "s1": "server", "c1": "chef"}
-ROLES = ["manager", "server", "chef"]
+USERS = {"m1": "manager", "s1": "server", "c1": "chef", "cust1": "customer"}
+ROLES = ["manager", "server", "chef", "customer"]
 
 def read_int(prompt, min_val=None, max_val=None):
     while True:
@@ -39,6 +39,30 @@ def read_float(prompt, min_val=None):
             continue
         return v
 
+def read_bool(prompt):
+    while True:
+        s = input(prompt).strip().lower()
+        if s in ["y", "yes", "true", "1"]:
+            return True
+        if s in ["n", "no", "false", "0"]:
+            return False
+        print("Enter y or n")
+
+def read_status_code():
+    print("Status:")
+    print("1) received")
+    print("2) ready")
+    print("3) completed")
+    print("4) picked_up")
+    c = read_int("> ", 1, 4)
+    if c == 1:
+        return rest_pb2.RECEIVED
+    if c == 2:
+        return rest_pb2.READY
+    if c == 3:
+        return rest_pb2.COMPLETED
+    return rest_pb2.PICKED_UP
+
 def print_menu_items(items):
     if len(items) == 0:
         print("Menu is empty")
@@ -46,7 +70,19 @@ def print_menu_items(items):
     print("")
     print("Menu:")
     for it in items:
-        print(f"{it.itemId}. {it.name} ({it.category}) - ${it.price:.2f}")
+        avail = "available" if it.availability else "unavailable"
+        desc = f" - {it.description}" if str(it.description).strip() != "" else ""
+        print(f"{it.itemId}. {it.name} ({it.category}) - ${it.price:.2f} [{avail}]{desc}")
+    print("")
+
+def print_orders(orders):
+    if len(orders) == 0:
+        print("No orders")
+        return
+    print("")
+    for o in orders:
+        extra = f"Table {o.tableNumber}" if o.orderType == "dine-in" else o.guestName
+        print(f"{o.orderId} | {o.orderType} | {o.status} | {extra} | ${o.total:.2f}")
     print("")
 
 def fetch_menu(stub, request_id, user_id, role):
@@ -64,8 +100,12 @@ def manager_loop(stub, user_id):
         print("Manager Actions")
         print("1) Get menu")
         print("2) Update menu item price")
-        print("3) Logout")
-        choice = read_int("> ", 1, 3)
+        print("3) Add menu item")
+        print("4) Update menu item")
+        print("5) Remove menu item")
+        print("6) Generate report")
+        print("7) Logout")
+        choice = read_int("> ", 1, 7)
 
         if choice == 1:
             request_id += 1
@@ -87,6 +127,80 @@ def manager_loop(stub, user_id):
             request_id += 1
             resp = stub.update_menu_price(rest_pb2.UpdateMenuPriceRequest(requestId=request_id, userId=user_id, role=role, itemId=item_id, newPrice=new_price))
             print(resp.status, "-", resp.message)
+
+        elif choice == 3:
+            item_id = input("Item id: ").strip()
+            name = input("Name: ").strip()
+            category = input("Category: ").strip()
+            price = read_float("Price: ", 0.01)
+            description = input("Description: ").strip()
+            availability = read_bool("Available (y/n): ")
+
+            request_id += 1
+            resp = stub.add_menu_item(
+                rest_pb2.AddMenuItemRequest(
+                    requestId=request_id,
+                    userId=user_id,
+                    role=role,
+                    item=rest_pb2.MenuItem(
+                        itemId=item_id,
+                        name=name,
+                        category=category,
+                        price=price,
+                        description=description,
+                        availability=availability,
+                    ),
+                )
+            )
+            print(resp.status, "-", resp.message)
+
+        elif choice == 4:
+            item_id = input("Item id: ").strip()
+            name = input("New name: ").strip()
+            category = input("New category: ").strip()
+            price = read_float("New price: ", 0.01)
+            description = input("New description: ").strip()
+            availability = read_bool("Available (y/n): ")
+
+            request_id += 1
+            resp = stub.update_menu_item(
+                rest_pb2.UpdateMenuItemRequest(
+                    requestId=request_id,
+                    userId=user_id,
+                    role=role,
+                    item=rest_pb2.MenuItem(
+                        itemId=item_id,
+                        name=name,
+                        category=category,
+                        price=price,
+                        description=description,
+                        availability=availability,
+                    ),
+                )
+            )
+            print(resp.status, "-", resp.message)
+
+        elif choice == 5:
+            item_id = input("Item id to remove: ").strip()
+            if item_id == "":
+                print("Missing item id")
+                continue
+            request_id += 1
+            resp = stub.remove_menu_item(rest_pb2.RemoveMenuItemRequest(requestId=request_id, userId=user_id, role=role, itemId=item_id))
+            print(resp.status, "-", resp.message)
+
+        elif choice == 6:
+            request_id += 1
+            resp = stub.generate_report(rest_pb2.GenerateReportRequest(requestId=request_id, userId=user_id, role=role))
+            if resp.status != "success":
+                print(resp.status, "-", resp.message)
+                continue
+            print("Total Orders:", resp.totalOrders)
+            print("Total Revenue:", f"${resp.totalRevenue:.2f}")
+            print("received:", resp.receivedCount)
+            print("ready:", resp.readyCount)
+            print("completed:", resp.completedCount)
+            print("picked_up:", resp.pickedUpCount)
 
         else:
             request_id += 1
@@ -154,7 +268,7 @@ def build_guest_orders(items, guest_count):
     return guests
 
 def build_takeout_items(items):
-    valid_ids = set([str(it.itemId) for it in items])
+    valid_ids = set([str(it.itemId) for it in items if it.availability])
     line_items = []
     total_qty = 0
 
@@ -187,7 +301,9 @@ def server_loop(stub, user_id):
         print("3) Place takeout order")
         print("4) Logout")
         print("5) List orders")
-        choice = read_int("> ", 1, 5)
+        print("6) Update order status")
+        print("7) Get order status")
+        choice = read_int("> ", 1, 7)
 
         if choice == 1:
             request_id += 1
@@ -237,22 +353,48 @@ def server_loop(stub, user_id):
             if resp.status == "success":
                 print("Order ID:", resp.orderId)
                 print("Total:", f"${resp.total:.2f}")
+
         elif choice == 5:
             request_id += 1
             resp = stub.list_orders(rest_pb2.ListOrdersRequest(requestId=request_id, userId=user_id, role=role))
             if resp.status != "success":
                 print(resp.status, "-", resp.message)
                 continue
+            print_orders(resp.orders)
 
-            if len(resp.orders) == 0:
-                print("No orders")
+        elif choice == 6:
+            order_id = input("Order id: ").strip()
+            if order_id == "":
+                print("Missing order id")
                 continue
+            new_status = read_status_code()
+            request_id += 1
+            resp = stub.update_order_status(
+                rest_pb2.UpdateOrderStatusRequest(
+                    requestId=request_id,
+                    userId=user_id,
+                    role=role,
+                    orderId=order_id,
+                    newStatus=new_status,
+                )
+            )
+            print(resp.status, "-", resp.message)
+            if resp.status == "success":
+                print("Previous:", resp.previousStatus, "Current:", resp.currentStatus)
 
-            print("")
-            for o in resp.orders:
-                extra = f"Table {o.tableNumber}" if o.orderType == "dine-in" else o.guestName
-                print(f"{o.orderId} | {o.orderType} | {o.status} | {extra} | ${o.total:.2f}")
-            print("")
+        elif choice == 7:
+            order_id = input("Order id: ").strip()
+            if order_id == "":
+                print("Missing order id")
+                continue
+            request_id += 1
+            resp = stub.get_order_status(rest_pb2.GetOrderStatusRequest(requestId=request_id, userId=user_id, role=role, orderId=order_id))
+            print(resp.status, "-", resp.message)
+            if resp.status == "success":
+                print("Order:", resp.orderId)
+                print("Type:", resp.orderType)
+                print("Status:", resp.currentStatus)
+                print("Created:", resp.createdTime)
 
         else:
             request_id += 1
@@ -268,8 +410,10 @@ def chef_loop(stub, user_id):
         print("Chef Actions")
         print("1) List orders")
         print("2) Mark order ready")
-        print("3) Logout")
-        choice = read_int("> ", 1, 3)
+        print("3) Update order status")
+        print("4) Get order status")
+        print("5) Logout")
+        choice = read_int("> ", 1, 5)
 
         if choice == 1:
             request_id += 1
@@ -277,16 +421,7 @@ def chef_loop(stub, user_id):
             if resp.status != "success":
                 print(resp.status, "-", resp.message)
                 continue
-
-            if len(resp.orders) == 0:
-                print("No orders")
-                continue
-
-            print("")
-            for o in resp.orders:
-                extra = f"Table {o.tableNumber}" if o.orderType == "dine-in" else o.guestName
-                print(f"{o.orderId} | {o.orderType} | {o.status} | {extra} | ${o.total:.2f}")
-            print("")
+            print_orders(resp.orders)
 
         elif choice == 2:
             order_id = input("Order id: ").strip()
@@ -297,6 +432,116 @@ def chef_loop(stub, user_id):
             resp = stub.mark_order_ready(rest_pb2.MarkOrderReadyRequest(requestId=request_id, userId=user_id, role=role, orderId=order_id))
             print(resp.status, "-", resp.message)
 
+        elif choice == 3:
+            order_id = input("Order id: ").strip()
+            if order_id == "":
+                print("Missing order id")
+                continue
+            new_status = read_status_code()
+            request_id += 1
+            resp = stub.update_order_status(
+                rest_pb2.UpdateOrderStatusRequest(
+                    requestId=request_id,
+                    userId=user_id,
+                    role=role,
+                    orderId=order_id,
+                    newStatus=new_status,
+                )
+            )
+            print(resp.status, "-", resp.message)
+            if resp.status == "success":
+                print("Previous:", resp.previousStatus, "Current:", resp.currentStatus)
+
+        elif choice == 4:
+            order_id = input("Order id: ").strip()
+            if order_id == "":
+                print("Missing order id")
+                continue
+            request_id += 1
+            resp = stub.get_order_status(rest_pb2.GetOrderStatusRequest(requestId=request_id, userId=user_id, role=role, orderId=order_id))
+            print(resp.status, "-", resp.message)
+            if resp.status == "success":
+                print("Order:", resp.orderId)
+                print("Type:", resp.orderType)
+                print("Status:", resp.currentStatus)
+                print("Created:", resp.createdTime)
+
+        else:
+            request_id += 1
+            resp = stub.logout(rest_pb2.LogoutRequest(requestId=request_id, userId=user_id, role=role))
+            print(resp.status, "-", resp.message)
+            return
+
+def customer_loop(stub, user_id):
+    role = "customer"
+    request_id = 1
+
+    while True:
+        print("Customer Actions")
+        print("1) Get menu")
+        print("2) Place online order")
+        print("3) Get order status")
+        print("4) Logout")
+        choice = read_int("> ", 1, 4)
+
+        if choice == 1:
+            request_id += 1
+            items = fetch_menu(stub, request_id, user_id, role)
+            print_menu_items(items)
+
+        elif choice == 2:
+            request_id += 1
+            items = fetch_menu(stub, request_id, user_id, role)
+            print_menu_items(items)
+
+            if len(items) == 0:
+                continue
+
+            customer_name = input("Customer name: ").strip()
+            if customer_name == "":
+                print("Missing customer name")
+                continue
+
+            pickup_info = input("Pickup info: ").strip()
+            if pickup_info == "":
+                print("Missing pickup info")
+                continue
+
+            line_items = build_takeout_items(items)
+            if len(line_items) == 0:
+                print("Must add at least 1 item")
+                continue
+
+            request_id += 1
+            resp = stub.place_online_order(
+                rest_pb2.OnlineOrderRequest(
+                    requestId=request_id,
+                    userId=user_id,
+                    role=role,
+                    customerName=customer_name,
+                    items=line_items,
+                    pickupInfo=pickup_info,
+                )
+            )
+            print(resp.status, "-", resp.message)
+            if resp.status == "success":
+                print("Order ID:", resp.orderId)
+                print("Total:", f"${resp.total:.2f}")
+
+        elif choice == 3:
+            order_id = input("Order id: ").strip()
+            if order_id == "":
+                print("Missing order id")
+                continue
+            request_id += 1
+            resp = stub.get_order_status(rest_pb2.GetOrderStatusRequest(requestId=request_id, userId=user_id, role=role, orderId=order_id))
+            print(resp.status, "-", resp.message)
+            if resp.status == "success":
+                print("Order:", resp.orderId)
+                print("Type:", resp.orderType)
+                print("Status:", resp.currentStatus)
+                print("Created:", resp.createdTime)
+
         else:
             request_id += 1
             resp = stub.logout(rest_pb2.LogoutRequest(requestId=request_id, userId=user_id, role=role))
@@ -305,7 +550,7 @@ def chef_loop(stub, user_id):
 
 def pick_user_and_role():
     user_id = input("User id: ").strip()
-    role = input("Role (manager/server/chef): ").strip().lower()
+    role = input("Role (manager/server/chef/customer): ").strip().lower()
 
     if user_id == "":
         print("Missing user id")
@@ -315,8 +560,8 @@ def pick_user_and_role():
         print("Missing role")
         return "", ""
 
-    if role not in ["manager", "server", "chef"]:
-        print("Invalid role (must be manager, server, or chef)")
+    if role not in ["manager", "server", "chef", "customer"]:
+        print("Invalid role (must be manager, server, chef, or customer)")
         return "", ""
 
     return user_id, role
@@ -341,6 +586,8 @@ def run():
         server_loop(stub, user_id)
     elif role == "chef":
         chef_loop(stub, user_id)
+    elif role == "customer":
+        customer_loop(stub, user_id)
     else:
         print("error: invalid role")
 
