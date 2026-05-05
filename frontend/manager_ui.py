@@ -35,6 +35,7 @@ def build_manager_dashboard(self):
     self.neutral_button(button_frame, "Remove Item", self.manager_remove_item).pack(side="left", padx=5)
     self.primary_button(button_frame, "Update Price", self.manager_update_price_popup).pack(side="left", padx=5)
     self.secondary_button(button_frame, "View Reports", self.manager_view_reports).pack(side="left", padx=5)
+    self.neutral_button(button_frame, "Server View", self.manager_switch_to_server_view).pack(side="left", padx=5)
 
     card = self.build_card(frame)
 
@@ -105,6 +106,23 @@ def manager_get_menu(self):
     except Exception as e:
         self.manager_status.config(text="Error loading menu.", fg="red")
         print("Manager get menu error:", e)
+
+
+def manager_switch_to_server_view(self):
+    self.manager_user_id = self.user_id
+    self.manager_server_mode = True
+    self.user_id = "s1"
+    self.role = "server"
+    self.build_server_dashboard()
+
+
+def manager_return_from_server_view(self):
+    if self.manager_user_id != "":
+        self.user_id = self.manager_user_id
+
+    self.role = "manager"
+    self.manager_server_mode = False
+    self.build_manager_dashboard()
 
 
 def manager_update_price_popup(self):

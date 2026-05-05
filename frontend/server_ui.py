@@ -29,6 +29,9 @@ def build_server_dashboard(self):
     button_frame = tk.Frame(frame, bg=self.bg_color)
     button_frame.pack(anchor="w", pady=(0, 10))
 
+    if getattr(self, "manager_server_mode", False):
+        self.neutral_button(button_frame, "Back to Manager", self.manager_return_from_server_view).pack(side="left", padx=5)
+
     self.neutral_button(button_frame, "Get Menu", self.server_get_menu).pack(side="left", padx=5)
     self.primary_button(button_frame, "Place Takeout", self.server_place_takeout_popup).pack(side="left", padx=5)
     self.secondary_button(button_frame, "List Orders", self.server_list_orders).pack(side="left", padx=5)

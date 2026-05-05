@@ -29,6 +29,8 @@ from frontend.manager_ui import (
     manager_add_item_popup,
     manager_edit_item_popup,
     manager_remove_item,
+    manager_switch_to_server_view,
+    manager_return_from_server_view,
 )
 from frontend.server_ui import (
     build_server_dashboard,
@@ -71,6 +73,8 @@ class RestaurantGUI:
 
         self.user_id = ""
         self.role = ""
+        self.manager_user_id = ""
+        self.manager_server_mode = False
         self.request_id = 1
 
         apply_theme(self)
@@ -292,6 +296,8 @@ class RestaurantGUI:
 
         self.user_id = ""
         self.role = ""
+        self.manager_user_id = ""
+        self.manager_server_mode = False
         self.build_login_screen()
 
 
@@ -312,6 +318,8 @@ RestaurantGUI.manager_update_price_popup = manager_update_price_popup
 RestaurantGUI.manager_add_item_popup = manager_add_item_popup
 RestaurantGUI.manager_edit_item_popup = manager_edit_item_popup
 RestaurantGUI.manager_remove_item = manager_remove_item
+RestaurantGUI.manager_switch_to_server_view = manager_switch_to_server_view
+RestaurantGUI.manager_return_from_server_view = manager_return_from_server_view
 RestaurantGUI.manager_view_reports = manager_view_reports
 
 RestaurantGUI.build_server_dashboard = build_server_dashboard
