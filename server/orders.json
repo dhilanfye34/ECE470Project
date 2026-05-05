@@ -292,7 +292,7 @@
   {
     "orderId": "63441",
     "orderType": "takeout",
-    "status": "confirmed",
+    "status": "ready",
     "tableNumber": 0,
     "guestName": "bob",
     "guestCount": 0,
@@ -314,34 +314,77 @@
     "total": 84.69
   },
   {
-    "orderId": "354964",
-    "orderType": "online",
-    "status": "received",
+    "orderId": "89516",
+    "orderType": "takeout",
+    "status": "confirmed",
     "tableNumber": 0,
-    "guestName": "Jim",
+    "guestName": "Gianna",
     "guestCount": 0,
     "guests": [],
     "items": [
       {
         "itemId": "2",
-        "quantity": 4
+        "quantity": 1
+      }
+    ],
+    "total": 7.29
+  },
+  {
+    "orderId": "572440",
+    "orderType": "takeout",
+    "status": "confirmed",
+    "tableNumber": 0,
+    "guestName": "Joe",
+    "guestCount": 0,
+    "guests": [],
+    "items": [
+      {
+        "itemId": "1",
+        "quantity": 3
       },
       {
-        "itemId": "5",
+        "itemId": "3",
         "quantity": 1
       },
       {
-        "itemId": "2",
-        "quantity": 2
-      },
-      {
-        "itemId": "2",
-        "quantity": 2
+        "itemId": "7",
+        "quantity": 1
       }
     ],
-    "total": 64.41000000000001,
-    "createdTime": "2026-04-16T23:48:48.272152+00:00",
-    "pickupInfo": "4",
-    "customerName": "Jim"
+    "total": 44.45
+  },
+  {
+    "orderId": "138676",
+    "orderType": "dine-in",
+    "status": "ready",
+    "tableNumber": 5,
+    "guestName": "",
+    "guestCount": 3,
+    "guests": [
+      {
+        "guestNumber": 1,
+        "itemIds": [
+          "1",
+          "12"
+        ]
+      },
+      {
+        "guestNumber": 2,
+        "itemIds": [
+          "1",
+          "4",
+          "12"
+        ]
+      },
+      {
+        "guestNumber": 3,
+        "itemIds": [
+          "5",
+          "12"
+        ]
+      }
+    ],
+    "items": [],
+    "total": 41.71
   }
 ]
