@@ -1,4 +1,5 @@
 import tkinter as tk
+from tkinter import messagebox
 import rest_pb2
 
 
@@ -29,7 +30,10 @@ def build_server_dashboard(self):
     button_frame.pack(anchor="w", pady=(0, 10))
 
     self.neutral_button(button_frame, "Get Menu", self.server_get_menu).pack(side="left", padx=5)
-
+    self.primary_button(button_frame, "Place Takeout", self.server_place_takeout_popup).pack(side="left", padx=5)
+    self.secondary_button(button_frame, "List Orders", self.server_list_orders).pack(side="left", padx=5)
+    self.secondary_button(button_frame, "Place Dine-In", self.server_place_dinein_popup).pack(side="left", padx=5)
+   
     card = self.build_card(frame)
 
     tk.Label(
@@ -92,3 +96,443 @@ def server_get_menu(self):
     except Exception as e:
         self.server_status.config(text="Error loading menu.", fg="red")
         print("Server get menu error:", e)
+
+
+def server_place_takeout_popup(self):
+    popup = tk.Toplevel(self.root)
+    popup.title("Place Takeout Order")
+    popup.geometry("430x650")
+    popup.configure(bg=self.bg_color)
+
+    card = tk.Frame(
+        popup,
+        bg=self.card_color,
+        highlightthickness=1,
+        highlightbackground=self.border_color,
+        padx=20,
+        pady=20
+    )
+    card.pack(fill="both", expand=True, padx=18, pady=18)
+
+    tk.Label(
+        card,
+        text="Place Takeout Order",
+        font=("Arial", 18, "bold"),
+        fg=self.green,
+        bg=self.card_color
+    ).pack(pady=(0, 10))
+
+    tk.Label(
+        card,
+        text="Add multiple menu items before submitting the order.",
+        bg=self.card_color,
+        fg=self.text_muted,
+        font=("Arial", 10)
+    ).pack(pady=(0, 12))
+
+    tk.Label(card, text="Guest Name", bg=self.card_color, fg=self.text_dark, font=("Arial", 11, "bold")).pack(anchor="w")
+    guest_entry = tk.Entry(card, font=("Arial", 11))
+    guest_entry.pack(fill="x", pady=(5, 12), ipady=5)
+
+    tk.Label(card, text="Item ID", bg=self.card_color, fg=self.text_dark, font=("Arial", 11, "bold")).pack(anchor="w")
+    item_entry = tk.Entry(card, font=("Arial", 11))
+    item_entry.pack(fill="x", pady=(5, 12), ipady=5)
+
+    tk.Label(card, text="Quantity", bg=self.card_color, fg=self.text_dark, font=("Arial", 11, "bold")).pack(anchor="w")
+    qty_entry = tk.Entry(card, font=("Arial", 11))
+    qty_entry.pack(fill="x", pady=(5, 12), ipady=5)
+
+    status_label = tk.Label(card, text="", bg=self.card_color, fg="red", font=("Arial", 10))
+    status_label.pack(pady=(0, 8))
+
+    tk.Label(card, text="Order Items", bg=self.card_color, fg=self.text_dark, font=("Arial", 11, "bold")).pack(anchor="w")
+
+    cart_listbox = tk.Listbox(card, height=6, font=("Arial", 10))
+    cart_listbox.pack(fill="both", expand=True, pady=(5, 10))
+
+    order_items = []
+
+    def add_item():
+        item_id = item_entry.get().strip()
+        qty_raw = qty_entry.get().strip()
+
+        if item_id == "":
+            status_label.config(text="Enter an item ID.")
+            return
+
+        try:
+            quantity = int(qty_raw)
+        except ValueError:
+            status_label.config(text="Quantity must be a number.")
+            return
+
+        if quantity < 1:
+            status_label.config(text="Quantity must be at least 1.")
+            return
+
+        total_qty = quantity
+        for existing_item in order_items:
+            total_qty += existing_item.quantity
+
+        if total_qty > 10:
+            status_label.config(text="Takeout orders can have at most 10 total items.")
+            return
+
+        line_item = rest_pb2.OrderLineItem(
+            itemId=item_id,
+            quantity=quantity
+        )
+
+        order_items.append(line_item)
+        cart_listbox.insert(tk.END, "Item ID: " + item_id + " | Quantity: " + str(quantity))
+
+        item_entry.delete(0, tk.END)
+        qty_entry.delete(0, tk.END)
+        item_entry.focus_set()
+        status_label.config(text="Item added.", fg=self.green)
+
+    def submit_order():
+        guest_name = guest_entry.get().strip()
+
+        if guest_name == "":
+            status_label.config(text="Enter a guest name.", fg="red")
+            return
+
+        if len(order_items) == 0:
+            status_label.config(text="Add at least one item.", fg="red")
+            return
+
+        try:
+            response = self.stub.place_takeout_order(
+                rest_pb2.TakeoutOrderRequest(
+                    requestId=self.next_request_id(),
+                    userId=self.user_id,
+                    role=self.role,
+                    guestName=guest_name,
+                    items=order_items
+                )
+            )
+
+            if response.status == "success":
+                messagebox.showinfo(
+                    "Order Placed",
+                    "Order ID: " + response.orderId + "\nTotal: $" + format(response.total, ".2f")
+                )
+                self.server_status.config(text="Takeout order placed successfully.", fg=self.green)
+                popup.destroy()
+            else:
+                status_label.config(text=response.message, fg="red")
+
+        except Exception as e:
+            status_label.config(text="Error placing order.", fg="red")
+            print("Takeout order error:", e)
+
+    def remove_selected_item():
+        selected = cart_listbox.curselection()
+
+        if not selected:
+            status_label.config(text="Select an item to remove.", fg="red")
+            return
+
+        index = selected[0]
+        cart_listbox.delete(index)
+        del order_items[index]
+        status_label.config(text="Item removed.", fg=self.green)
+
+    button_frame = tk.Frame(card, bg=self.card_color)
+    button_frame.pack(pady=8)
+
+    tk.Button(
+        button_frame,
+        text="Add Item",
+        command=add_item,
+        bg=self.green,
+        fg=self.text_dark,
+        activebackground=self.green,
+        activeforeground=self.text_dark,
+        relief="flat",
+        bd=0,
+        font=("Arial", 10, "bold"),
+        padx=14,
+        pady=7
+    ).pack(side="left", padx=5)
+
+    tk.Button(
+        button_frame,
+        text="Remove Item",
+        command=remove_selected_item,
+        bg=self.cream,
+        fg=self.text_dark,
+        activebackground=self.cream,
+        activeforeground=self.text_dark,
+        relief="flat",
+        bd=0,
+        font=("Arial", 10, "bold"),
+        padx=14,
+        pady=7
+    ).pack(side="left", padx=5)
+
+    tk.Button(
+        card,
+        text="Submit Order",
+        command=submit_order,
+        bg=self.orange,
+        fg=self.text_dark,
+        activebackground=self.orange,
+        activeforeground=self.text_dark,
+        relief="flat",
+        bd=0,
+        font=("Arial", 10, "bold"),
+        padx=16,
+        pady=8
+    ).pack(pady=8)
+
+    def handle_enter(event):
+        current = popup.focus_get()
+
+        if current == item_entry:
+            qty_entry.focus_set()
+        elif current == qty_entry:
+            add_item()
+        else:
+            submit_order()
+
+    guest_entry.focus_set()
+
+    guest_entry.bind("<Return>", handle_enter)
+    item_entry.bind("<Return>", handle_enter)
+    qty_entry.bind("<Return>", handle_enter)
+    cart_listbox.bind("<Return>", handle_enter)
+
+    popup.bind("<Command-Return>", lambda event: submit_order())
+
+
+def server_list_orders(self):
+    try:
+        response = self.stub.list_orders(
+            rest_pb2.ListOrdersRequest(
+                requestId=self.next_request_id(),
+                userId=self.user_id,
+                role=self.role
+            )
+        )
+
+        if response.status != "success":
+            self.server_status.config(text=response.message, fg="red")
+            return
+
+        orders_window = tk.Toplevel(self.root)
+        orders_window.title("Server Orders")
+        orders_window.geometry("900x500")
+        orders_window.configure(bg=self.bg_color)
+
+        tk.Label(
+            orders_window,
+            text="Current Orders",
+            font=("Arial", 20, "bold"),
+            fg=self.green,
+            bg=self.bg_color
+        ).pack(pady=(15, 5))
+
+        tk.Label(
+            orders_window,
+            text="Orders currently stored in The Hurricane Grill system.",
+            font=("Arial", 11),
+            fg=self.text_muted,
+            bg=self.bg_color
+        ).pack()
+
+        card = tk.Frame(
+            orders_window,
+            bg=self.card_color,
+            highlightthickness=1,
+            highlightbackground=self.border_color,
+            padx=14,
+            pady=14
+        )
+        card.pack(fill="both", expand=True, padx=18, pady=18)
+
+        table = self.create_orders_table(card)
+
+        for order in response.orders:
+            extra = f"Table {order.tableNumber}" if order.orderType == "dine-in" else order.guestName
+            table.insert(
+                "",
+                "end",
+                values=(order.orderId, order.orderType, order.status, extra, f"${order.total:.2f}")
+            )
+
+        self.server_status.config(text="Orders loaded successfully.", fg=self.green)
+
+    except Exception as e:
+        self.server_status.config(text="Error loading orders.", fg="red")
+        print("Server list orders error:", e)
+        
+def server_place_dinein_popup(self):
+    popup = tk.Toplevel(self.root)
+    popup.title("Place Dine-In Order")
+    popup.geometry("460x620")
+    popup.configure(bg=self.bg_color)
+
+    card = tk.Frame(
+        popup,
+        bg=self.card_color,
+        highlightthickness=1,
+        highlightbackground=self.border_color,
+        padx=20,
+        pady=20
+    )
+    card.pack(fill="both", expand=True, padx=18, pady=18)
+
+    tk.Label(
+        card,
+        text="Place Dine-In Order",
+        font=("Arial", 18, "bold"),
+        fg=self.green,
+        bg=self.card_color
+    ).pack(pady=(0, 10))
+
+    tk.Label(
+        card,
+        text="Enter table information and item IDs for each guest.",
+        bg=self.card_color,
+        fg=self.text_muted,
+        font=("Arial", 10)
+    ).pack(pady=(0, 12))
+
+    tk.Label(card, text="Table Number", bg=self.card_color, fg=self.text_dark, font=("Arial", 11, "bold")).pack(anchor="w")
+    table_entry = tk.Entry(card, font=("Arial", 11))
+    table_entry.pack(fill="x", pady=(5, 12), ipady=5)
+
+    tk.Label(card, text="Guest Count (1-4)", bg=self.card_color, fg=self.text_dark, font=("Arial", 11, "bold")).pack(anchor="w")
+    guest_count_entry = tk.Entry(card, font=("Arial", 11))
+    guest_count_entry.pack(fill="x", pady=(5, 12), ipady=5)
+
+    tk.Label(
+        card,
+        text="Guest Item IDs",
+        bg=self.card_color,
+        fg=self.text_dark,
+        font=("Arial", 11, "bold")
+    ).pack(anchor="w")
+
+    tk.Label(
+        card,
+        text="For each guest, enter 1-4 item IDs separated by spaces. Example: 1 4 7",
+        bg=self.card_color,
+        fg=self.text_muted,
+        font=("Arial", 9)
+    ).pack(anchor="w", pady=(2, 8))
+
+    guest_entries = []
+
+    guests_frame = tk.Frame(card, bg=self.card_color)
+    guests_frame.pack(fill="x", pady=(0, 8))
+
+    for i in range(4):
+        row = tk.Frame(guests_frame, bg=self.card_color)
+        row.pack(fill="x", pady=3)
+
+        tk.Label(
+            row,
+            text="Guest " + str(i + 1),
+            bg=self.card_color,
+            fg=self.text_dark,
+            font=("Arial", 10)
+        ).pack(side="left", padx=(0, 8))
+
+        entry = tk.Entry(row, font=("Arial", 10))
+        entry.pack(side="left", fill="x", expand=True)
+        guest_entries.append(entry)
+
+    status_label = tk.Label(card, text="", bg=self.card_color, fg="red", font=("Arial", 10))
+    status_label.pack(pady=(8, 8))
+
+    def submit_dinein_order():
+        table_raw = table_entry.get().strip()
+        guest_count_raw = guest_count_entry.get().strip()
+
+        try:
+            table_number = int(table_raw)
+        except ValueError:
+            status_label.config(text="Table number must be a number.", fg="red")
+            return
+
+        try:
+            guest_count = int(guest_count_raw)
+        except ValueError:
+            status_label.config(text="Guest count must be a number.", fg="red")
+            return
+
+        if guest_count < 1 or guest_count > 4:
+            status_label.config(text="Guest count must be between 1 and 4.", fg="red")
+            return
+
+        guests = []
+
+        for i in range(guest_count):
+            raw_items = guest_entries[i].get().strip()
+
+            if raw_items == "":
+                status_label.config(text="Enter item IDs for Guest " + str(i + 1) + ".", fg="red")
+                return
+
+            item_ids = raw_items.split()
+
+            if len(item_ids) < 1 or len(item_ids) > 4:
+                status_label.config(text="Each guest must have 1-4 items.", fg="red")
+                return
+
+            guests.append(
+                rest_pb2.GuestOrder(
+                    guestNumber=i + 1,
+                    itemIds=item_ids
+                )
+            )
+
+        try:
+            response = self.stub.place_dine_in_order(
+                rest_pb2.DineInOrderRequest(
+                    requestId=self.next_request_id(),
+                    userId=self.user_id,
+                    role=self.role,
+                    tableNumber=table_number,
+                    guestCount=guest_count,
+                    guests=guests
+                )
+            )
+
+            if response.status == "success":
+                messagebox.showinfo(
+                    "Order Placed",
+                    "Order ID: " + response.orderId + "\nTotal: $" + format(response.total, ".2f")
+                )
+                self.server_status.config(text="Dine-in order placed successfully.", fg=self.green)
+                popup.destroy()
+            else:
+                status_label.config(text=response.message, fg="red")
+
+        except Exception as e:
+            status_label.config(text="Error placing dine-in order.", fg="red")
+            print("Dine-in order error:", e)
+
+    tk.Button(
+        card,
+        text="Submit Dine-In Order",
+        command=submit_dinein_order,
+        bg=self.orange,
+        fg=self.text_dark,
+        activebackground=self.orange,
+        activeforeground=self.text_dark,
+        relief="flat",
+        bd=0,
+        font=("Arial", 10, "bold"),
+        padx=16,
+        pady=8
+    ).pack(pady=10)
+
+    def handle_enter(event):
+        submit_dinein_order()
+
+    table_entry.focus_set()
+    popup.bind("<Command-Return>", handle_enter)

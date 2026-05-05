@@ -1,7 +1,6 @@
 import tkinter as tk
 import rest_pb2
 
-
 def build_chef_dashboard(self):
     self.clear_window()
     self.build_header("Chef Dashboard", "Kitchen queue and active order visibility")
@@ -29,6 +28,7 @@ def build_chef_dashboard(self):
     button_frame.pack(anchor="w", pady=(0, 10))
 
     self.primary_button(button_frame, "List Orders", self.chef_list_orders).pack(side="left", padx=5)
+    self.secondary_button(button_frame, "Mark Ready", self.chef_mark_ready).pack(side="left", padx=5)
 
     card = self.build_card(frame)
 
@@ -93,3 +93,34 @@ def chef_list_orders(self):
     except Exception as e:
         self.chef_status.config(text="Error loading orders.", fg="red")
         print("Chef list orders error:", e)
+
+
+def chef_mark_ready(self):
+    selected = self.chef_table.selection()
+
+    if not selected:
+        self.chef_status.config(text="Select an order first.", fg="red")
+        return
+
+    order_values = self.chef_table.item(selected[0], "values")
+    order_id = order_values[0]
+
+    try:
+        response = self.stub.mark_order_ready(
+            rest_pb2.MarkOrderReadyRequest(
+                requestId=self.next_request_id(),
+                userId=self.user_id,
+                role=self.role,
+                orderId=order_id
+            )
+        )
+
+        if response.status == "success":
+            self.chef_status.config(text="Order marked ready.", fg=self.green)
+            self.chef_list_orders()
+        else:
+            self.chef_status.config(text=response.message, fg="red")
+
+    except Exception as e:
+        self.chef_status.config(text="Error marking order ready.", fg="red")
+        print("Chef mark ready error:", e)

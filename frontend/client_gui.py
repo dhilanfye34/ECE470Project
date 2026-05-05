@@ -29,10 +29,14 @@ from frontend.manager_ui import (
 from frontend.server_ui import (
     build_server_dashboard,
     server_get_menu,
+    server_place_takeout_popup,
+    server_place_dinein_popup,
+    server_list_orders,
 )
 from frontend.chef_ui import (
     build_chef_dashboard,
     chef_list_orders,
+    chef_mark_ready,
 )
 from frontend.reports_ui import manager_view_reports
 
@@ -244,9 +248,13 @@ RestaurantGUI.manager_view_reports = manager_view_reports
 
 RestaurantGUI.build_server_dashboard = build_server_dashboard
 RestaurantGUI.server_get_menu = server_get_menu
+RestaurantGUI.server_place_takeout_popup = server_place_takeout_popup
+RestaurantGUI.server_place_dinein_popup = server_place_dinein_popup
+RestaurantGUI.server_list_orders = server_list_orders
 
 RestaurantGUI.build_chef_dashboard = build_chef_dashboard
 RestaurantGUI.chef_list_orders = chef_list_orders
+RestaurantGUI.chef_mark_ready = chef_mark_ready
 
 
 if __name__ == "__main__":

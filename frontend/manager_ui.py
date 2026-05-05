@@ -138,6 +138,7 @@ def manager_update_price_popup(self):
 
     price_entry = tk.Entry(card, font=("Arial", 11))
     price_entry.pack(pady=5, ipady=5)
+    price_entry.focus_set()
 
     def submit_price():
         raw = price_entry.get().strip()
@@ -170,14 +171,16 @@ def manager_update_price_popup(self):
             messagebox.showerror("Error", "Could not update price.")
             print("Update price error:", e)
 
+    price_entry.bind("<Return>", lambda event: submit_price())
+
     tk.Button(
         card,
         text="Submit",
-        command=submit_price,
+        command=submit_price,            
         bg=self.orange,
-        fg="white",
-        activebackground=self.orange,
-        activeforeground="white",
+        fg=self.text_dark,
+        activebackground=self.orange,            
+        activeforeground=self.text_dark,
         relief="flat",
         bd=0,
         font=("Arial", 10, "bold"),
