@@ -24,25 +24,69 @@ VALID_STATUSES = [STATUS_RECEIVED, STATUS_READY, STATUS_COMPLETED, STATUS_PICKED
 menu_lock = threading.Lock()
 orders_lock = threading.Lock()
 
-def load_menu():
-    if not os.path.exists("menu.json"):
-        return []
-    with open("menu.json", "r") as file:
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+GCS_BUCKET_NAME = os.environ.get("GCS_BUCKET_NAME", "").strip()
+
+_storage_client = None
+
+def get_storage_bucket():
+    global _storage_client
+    if _storage_client is None:
+        from google.cloud import storage
+
+        _storage_client = storage.Client()
+    return _storage_client.bucket(GCS_BUCKET_NAME)
+
+def bundled_json_path(name):
+    return os.path.join(BASE_DIR, name)
+
+def default_json_value(name):
+    if name == "menu.json":
+        seed_path = bundled_json_path(name)
+        if os.path.exists(seed_path):
+            with open(seed_path, "r") as file:
+                return json.load(file)
+    return []
+
+def load_json(name):
+    if GCS_BUCKET_NAME:
+        blob = get_storage_bucket().blob(name)
+        if not blob.exists():
+            data = default_json_value(name)
+            save_json(name, data)
+            return data
+        return json.loads(blob.download_as_text())
+
+    path = bundled_json_path(name)
+    if not os.path.exists(path):
+        return default_json_value(name)
+    with open(path, "r") as file:
         return json.load(file)
+
+def save_json(name, data):
+    if GCS_BUCKET_NAME:
+        blob = get_storage_bucket().blob(name)
+        blob.upload_from_string(
+            json.dumps(data, indent=2),
+            content_type="application/json",
+        )
+        return
+
+    path = bundled_json_path(name)
+    with open(path, "w") as file:
+        json.dump(data, file, indent=2)
+
+def load_menu():
+    return load_json("menu.json")
 
 def save_menu(menu):
-    with open("menu.json", "w") as file:
-        json.dump(menu, file, indent=2)
+    save_json("menu.json", menu)
 
 def load_orders():
-    if not os.path.exists("orders.json"):
-        return []
-    with open("orders.json", "r") as file:
-        return json.load(file)
+    return load_json("orders.json")
 
 def save_orders(orders):
-    with open("orders.json", "w") as file:
-        json.dump(orders, file, indent=2)
+    save_json("orders.json", orders)
 
 def role_ok(role):
     return role in ["manager", "server", "chef", "customer"]
@@ -825,11 +869,12 @@ class RestaurantService(rest_pb2_grpc.RestaurantServiceServicer):
         return rest_pb2.MarkOrderReadyResponse(requestId=request.requestId, status="success", message="order marked ready")
 
 def serve():
+    port = int(os.environ.get("PORT", "50000"))
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     rest_pb2_grpc.add_RestaurantServiceServicer_to_server(RestaurantService(), server)
-    server.add_insecure_port("[::]:50000")
+    server.add_insecure_port(f"[::]:{port}")
     server.start()
-    print("Server running on port 50000")
+    print(f"Server running on port {port}")
     server.wait_for_termination()
 
 if __name__ == "__main__":

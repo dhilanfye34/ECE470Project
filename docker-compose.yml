@@ -1,0 +1,10 @@
+services:
+  restaurant-server:
+    build: .
+    environment:
+      PORT: "50000"
+    ports:
+      - "50000:50000"
+    volumes:
+      - ./server/menu.json:/app/server/menu.json
+      - ./server/orders.json:/app/server/orders.json

@@ -1,4 +1,38 @@
-venv/
+# Python bytecode and caches
 __pycache__/
-*.pyc
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Build and package outputs
+build/
+dist/
+*.egg-info/
+
+# Local environment and credentials
+.env
+.env.*
+*.pem
+*.key
+*service-account*.json
+*credentials*.json
+*client_secret*.json
+
+# Docker local overrides
+docker-compose.override.yml
+
+# Editor and OS files
+.vscode/
+.idea/
 .DS_Store
+Thumbs.db

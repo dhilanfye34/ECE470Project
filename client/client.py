@@ -10,6 +10,13 @@ import rest_pb2_grpc
 USERS = {"m1": "manager", "s1": "server", "c1": "chef", "cust1": "customer"}
 ROLES = ["manager", "server", "chef", "customer"]
 
+def create_channel():
+    address = os.environ.get("RESTAURANT_SERVER_ADDR", "localhost:50000").strip()
+    if address.endswith(":443") or ".run.app" in address:
+        credentials = grpc.ssl_channel_credentials()
+        return grpc.secure_channel(address, credentials)
+    return grpc.insecure_channel(address)
+
 def read_int(prompt, min_val=None, max_val=None):
     while True:
         s = input(prompt).strip()
@@ -567,7 +574,7 @@ def pick_user_and_role():
     return user_id, role
 
 def run():
-    channel = grpc.insecure_channel("localhost:50000")
+    channel = create_channel()
     stub = rest_pb2_grpc.RestaurantServiceStub(channel)
 
     user_id, role = pick_user_and_role()

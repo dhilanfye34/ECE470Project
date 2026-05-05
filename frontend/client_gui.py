@@ -3,6 +3,7 @@ import grpc
 import os
 import sys
 
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "gRPC")))
 
 import rest_pb2
@@ -41,6 +42,14 @@ from frontend.chef_ui import (
 from frontend.reports_ui import manager_view_reports
 
 
+def create_channel():
+    address = os.environ.get("RESTAURANT_SERVER_ADDR", "localhost:50000").strip()
+    if address.endswith(":443") or ".run.app" in address:
+        credentials = grpc.ssl_channel_credentials()
+        return grpc.secure_channel(address, credentials)
+    return grpc.insecure_channel(address)
+
+
 class RestaurantGUI:
     def __init__(self, root):
         self.root = root
@@ -54,7 +63,7 @@ class RestaurantGUI:
 
         apply_theme(self)
 
-        self.channel = grpc.insecure_channel("localhost:50000")
+        self.channel = create_channel()
         self.stub = rest_pb2_grpc.RestaurantServiceStub(self.channel)
 
         setup_table_style(self)
