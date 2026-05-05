@@ -73,10 +73,10 @@ def build_header(self, title, subtitle):
 
 
 def create_menu_table(self, parent):
-    columns = ("Item ID", "Name", "Category", "Price")
+    columns = ("Item ID", "Name", "Category", "Price", "Description", "Available")
     table = ttk.Treeview(parent, columns=columns, show="headings", height=12)
 
-    widths = (120, 280, 220, 140)
+    widths = (90, 190, 150, 100, 300, 100)
     for col, width in zip(columns, widths):
         table.heading(col, text=col)
         table.column(col, width=width, anchor="center")
@@ -86,10 +86,10 @@ def create_menu_table(self, parent):
 
 
 def create_orders_table(self, parent):
-    columns = ("Order ID", "Type", "Status", "Table/Guest", "Total")
+    columns = ("Order ID", "Type", "Status", "Table/Guest", "Customer", "Pickup Info", "Created", "Total")
     table = ttk.Treeview(parent, columns=columns, show="headings", height=12)
 
-    widths = (140, 160, 180, 240, 140)
+    widths = (95, 90, 110, 130, 140, 170, 160, 95)
     for col, width in zip(columns, widths):
         table.heading(col, text=col)
         table.column(col, width=width, anchor="center")

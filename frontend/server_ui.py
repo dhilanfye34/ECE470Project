@@ -33,6 +33,8 @@ def build_server_dashboard(self):
     self.primary_button(button_frame, "Place Takeout", self.server_place_takeout_popup).pack(side="left", padx=5)
     self.secondary_button(button_frame, "List Orders", self.server_list_orders).pack(side="left", padx=5)
     self.secondary_button(button_frame, "Place Dine-In", self.server_place_dinein_popup).pack(side="left", padx=5)
+    self.neutral_button(button_frame, "Order Status", self.server_status_lookup_popup).pack(side="left", padx=5)
+    self.secondary_button(button_frame, "Update Status", self.server_update_status_popup).pack(side="left", padx=5)
    
     card = self.build_card(frame)
 
@@ -88,7 +90,14 @@ def server_get_menu(self):
             self.server_table.insert(
                 "",
                 "end",
-                values=(item.itemId, item.name, item.category, f"${item.price:.2f}")
+                values=(
+                    item.itemId,
+                    item.name,
+                    item.category,
+                    f"${item.price:.2f}",
+                    item.description,
+                    "Yes" if item.availability else "No"
+                )
             )
 
         self.server_status.config(text="Menu loaded successfully.", fg=self.green)
@@ -101,7 +110,8 @@ def server_get_menu(self):
 def server_place_takeout_popup(self):
     popup = tk.Toplevel(self.root)
     popup.title("Place Takeout Order")
-    popup.geometry("430x650")
+    popup.geometry("540x760")
+    popup.minsize(520, 720)
     popup.configure(bg=self.bg_color)
 
     card = tk.Frame(
@@ -323,7 +333,7 @@ def server_list_orders(self):
 
         orders_window = tk.Toplevel(self.root)
         orders_window.title("Server Orders")
-        orders_window.geometry("900x500")
+        orders_window.geometry("1120x560")
         orders_window.configure(bg=self.bg_color)
 
         tk.Label(
@@ -354,12 +364,74 @@ def server_list_orders(self):
 
         table = self.create_orders_table(card)
 
+        status_label = tk.Label(card, text="", bg=self.card_color, fg=self.green, font=("Arial", 10, "bold"))
+        status_label.pack(anchor="w", pady=(0, 8))
+
+        actions = tk.Frame(card, bg=self.card_color)
+        actions.pack(anchor="w", pady=(0, 8))
+
+        def selected_order_id():
+            selected = table.selection()
+
+            if not selected:
+                status_label.config(text="Select an order first.", fg="red")
+                return ""
+
+            return table.item(selected[0], "values")[0]
+
+        def update_selected_status(status_code):
+            order_id = selected_order_id()
+
+            if order_id == "":
+                return
+
+            try:
+                update_response = self.stub.update_order_status(
+                    rest_pb2.UpdateOrderStatusRequest(
+                        requestId=self.next_request_id(),
+                        userId=self.user_id,
+                        role=self.role,
+                        orderId=order_id,
+                        newStatus=status_code
+                    )
+                )
+
+                if update_response.status == "success":
+                    selected = table.selection()[0]
+                    values = list(table.item(selected, "values"))
+                    values[2] = update_response.currentStatus
+                    table.item(selected, values=values)
+                    status_label.config(
+                        text="Updated " + order_id + " from " + update_response.previousStatus + " to " + update_response.currentStatus + ".",
+                        fg=self.green
+                    )
+                    self.server_status.config(text="Order status updated.", fg=self.green)
+                else:
+                    status_label.config(text=update_response.message, fg="red")
+
+            except Exception as e:
+                status_label.config(text="Error updating order status.", fg="red")
+                print("Server selected status update error:", e)
+
+        tk.Button(actions, text="Ready", command=lambda: update_selected_status(rest_pb2.READY), bg=self.green, fg=self.text_dark, activebackground=self.green, activeforeground=self.text_dark, relief="flat", bd=0, font=("Arial", 10, "bold"), padx=14, pady=7).pack(side="left", padx=5)
+        tk.Button(actions, text="Completed", command=lambda: update_selected_status(rest_pb2.COMPLETED), bg=self.orange, fg=self.text_dark, activebackground=self.orange, activeforeground=self.text_dark, relief="flat", bd=0, font=("Arial", 10, "bold"), padx=14, pady=7).pack(side="left", padx=5)
+        tk.Button(actions, text="Picked Up", command=lambda: update_selected_status(rest_pb2.PICKED_UP), bg=self.cream, fg=self.text_dark, activebackground=self.cream, activeforeground=self.text_dark, relief="flat", bd=0, font=("Arial", 10, "bold"), padx=14, pady=7).pack(side="left", padx=5)
+
         for order in response.orders:
             extra = f"Table {order.tableNumber}" if order.orderType == "dine-in" else order.guestName
             table.insert(
                 "",
                 "end",
-                values=(order.orderId, order.orderType, order.status, extra, f"${order.total:.2f}")
+                values=(
+                    order.orderId,
+                    order.orderType,
+                    order.status,
+                    extra,
+                    order.customerName,
+                    order.pickupInfo,
+                    order.createdTime,
+                    f"${order.total:.2f}"
+                )
             )
 
         self.server_status.config(text="Orders loaded successfully.", fg=self.green)
@@ -367,11 +439,186 @@ def server_list_orders(self):
     except Exception as e:
         self.server_status.config(text="Error loading orders.", fg="red")
         print("Server list orders error:", e)
+
+
+def _status_display(response):
+    details = [
+        "Order ID: " + response.orderId,
+        "Status: " + response.currentStatus,
+    ]
+
+    if response.orderType != "":
+        details.append("Type: " + response.orderType)
+
+    if response.createdTime != "":
+        details.append("Created: " + response.createdTime)
+
+    return "\n".join(details)
+
+
+def server_status_lookup_popup(self):
+    popup = tk.Toplevel(self.root)
+    popup.title("Order Status")
+    popup.geometry("440x330")
+    popup.minsize(420, 310)
+    popup.configure(bg=self.bg_color)
+
+    card = tk.Frame(
+        popup,
+        bg=self.card_color,
+        highlightthickness=1,
+        highlightbackground=self.border_color,
+        padx=20,
+        pady=20
+    )
+    card.pack(fill="both", expand=True, padx=18, pady=18)
+
+    tk.Label(
+        card,
+        text="Order Status",
+        font=("Arial", 18, "bold"),
+        fg=self.green,
+        bg=self.card_color
+    ).pack(pady=(0, 12))
+
+    tk.Label(card, text="Order ID", bg=self.card_color, fg=self.text_dark, font=("Arial", 11, "bold")).pack(anchor="w")
+    order_entry = tk.Entry(card, font=("Arial", 11))
+    order_entry.pack(fill="x", pady=(5, 12), ipady=5)
+
+    result_label = tk.Label(card, text="", bg=self.card_color, fg=self.text_dark, font=("Arial", 10), justify="left")
+    result_label.pack(fill="x", pady=(0, 12))
+
+    def lookup_status():
+        order_id = order_entry.get().strip()
+
+        if order_id == "":
+            result_label.config(text="Enter an order ID.", fg="red")
+            return
+
+        try:
+            response = self.stub.get_order_status(
+                rest_pb2.GetOrderStatusRequest(
+                    requestId=self.next_request_id(),
+                    userId=self.user_id,
+                    role=self.role,
+                    orderId=order_id
+                )
+            )
+
+            if response.status == "success":
+                result_label.config(text=_status_display(response), fg=self.text_dark)
+                self.server_status.config(text="Order status retrieved.", fg=self.green)
+            else:
+                result_label.config(text=response.message, fg="red")
+
+        except Exception as e:
+            result_label.config(text="Error checking order status.", fg="red")
+            print("Server status lookup error:", e)
+
+    tk.Button(
+        card,
+        text="Lookup",
+        command=lookup_status,
+        bg=self.orange,
+        fg=self.text_dark,
+        activebackground=self.orange,
+        activeforeground=self.text_dark,
+        relief="flat",
+        bd=0,
+        font=("Arial", 10, "bold"),
+        padx=16,
+        pady=8
+    ).pack()
+
+    order_entry.focus_set()
+    order_entry.bind("<Return>", lambda event: lookup_status())
+
+
+def _update_order_status(self, order_id, status_code, status_label):
+    try:
+        response = self.stub.update_order_status(
+            rest_pb2.UpdateOrderStatusRequest(
+                requestId=self.next_request_id(),
+                userId=self.user_id,
+                role=self.role,
+                orderId=order_id,
+                newStatus=status_code
+            )
+        )
+
+        if response.status == "success":
+            status_label.config(
+                text="Updated from " + response.previousStatus + " to " + response.currentStatus + ".",
+                fg=self.green
+            )
+            if self.role == "server" and hasattr(self, "server_status"):
+                self.server_status.config(text="Order status updated.", fg=self.green)
+            if self.role == "chef" and hasattr(self, "chef_status"):
+                self.chef_status.config(text="Order status updated.", fg=self.green)
+                self.chef_list_orders()
+        else:
+            status_label.config(text=response.message, fg="red")
+
+    except Exception as e:
+        status_label.config(text="Error updating order status.", fg="red")
+        print("Update order status error:", e)
+
+
+def server_update_status_popup(self):
+    popup = tk.Toplevel(self.root)
+    popup.title("Update Order Status")
+    popup.geometry("540x360")
+    popup.minsize(520, 340)
+    popup.configure(bg=self.bg_color)
+
+    card = tk.Frame(
+        popup,
+        bg=self.card_color,
+        highlightthickness=1,
+        highlightbackground=self.border_color,
+        padx=20,
+        pady=20
+    )
+    card.pack(fill="both", expand=True, padx=18, pady=18)
+
+    tk.Label(
+        card,
+        text="Update Order Status",
+        font=("Arial", 18, "bold"),
+        fg=self.green,
+        bg=self.card_color
+    ).pack(pady=(0, 12))
+
+    tk.Label(card, text="Order ID", bg=self.card_color, fg=self.text_dark, font=("Arial", 11, "bold")).pack(anchor="w")
+    order_entry = tk.Entry(card, font=("Arial", 11))
+    order_entry.pack(fill="x", pady=(5, 12), ipady=5)
+
+    status_label = tk.Label(card, text="", bg=self.card_color, fg="red", font=("Arial", 10))
+    status_label.pack(pady=(0, 10))
+
+    def update_to(status_code):
+        order_id = order_entry.get().strip()
+
+        if order_id == "":
+            status_label.config(text="Enter an order ID.", fg="red")
+            return
+
+        _update_order_status(self, order_id, status_code, status_label)
+
+    buttons = tk.Frame(card, bg=self.card_color)
+    buttons.pack(pady=8)
+
+    tk.Button(buttons, text="Ready", command=lambda: update_to(rest_pb2.READY), bg=self.green, fg=self.text_dark, activebackground=self.green, activeforeground=self.text_dark, relief="flat", bd=0, font=("Arial", 10, "bold"), padx=14, pady=8).pack(side="left", padx=5)
+    tk.Button(buttons, text="Completed", command=lambda: update_to(rest_pb2.COMPLETED), bg=self.orange, fg=self.text_dark, activebackground=self.orange, activeforeground=self.text_dark, relief="flat", bd=0, font=("Arial", 10, "bold"), padx=14, pady=8).pack(side="left", padx=5)
+    tk.Button(buttons, text="Picked Up", command=lambda: update_to(rest_pb2.PICKED_UP), bg=self.cream, fg=self.text_dark, activebackground=self.cream, activeforeground=self.text_dark, relief="flat", bd=0, font=("Arial", 10, "bold"), padx=14, pady=8).pack(side="left", padx=5)
+
+    order_entry.focus_set()
         
 def server_place_dinein_popup(self):
     popup = tk.Toplevel(self.root)
     popup.title("Place Dine-In Order")
-    popup.geometry("460x620")
+    popup.geometry("560x730")
+    popup.minsize(540, 700)
     popup.configure(bg=self.bg_color)
 
     card = tk.Frame(

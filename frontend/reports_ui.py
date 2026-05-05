@@ -1,11 +1,13 @@
 import tkinter as tk
 from tkinter import ttk
+import rest_pb2
 
 
 def manager_view_reports(self):
     report_window = tk.Toplevel(self.root)
     report_window.title("The Hurricane Grill Reports")
-    report_window.geometry("820x560")
+    report_window.geometry("780x520")
+    report_window.minsize(720, 480)
     report_window.configure(bg=self.bg_color)
 
     tk.Label(
@@ -24,45 +26,82 @@ def manager_view_reports(self):
         bg=self.bg_color
     ).pack()
 
-    notebook = ttk.Notebook(report_window)
-    notebook.pack(fill="both", expand=True, padx=16, pady=16)
-
-    top_items_frame = tk.Frame(notebook, bg=self.card_color)
-    category_sales_frame = tk.Frame(notebook, bg=self.card_color)
-    peak_times_frame = tk.Frame(notebook, bg=self.card_color)
-
-    notebook.add(top_items_frame, text="Top Selling Items")
-    notebook.add(category_sales_frame, text="Sales by Category")
-    notebook.add(peak_times_frame, text="Peak Order Times")
-
-    self.create_report_table(
-        top_items_frame,
-        ("Item", "Quantity Sold", "Revenue"),
-        [
-            ("Grilled Chicken Sandwich", "20", "$299.80"),
-            ("Hurricane Burger", "15", "$254.85"),
-            ("Loaded Fries", "10", "$69.90")
-        ]
+    status_label = tk.Label(
+        report_window,
+        text="",
+        font=("Arial", 10, "bold"),
+        fg=self.green,
+        bg=self.bg_color
     )
+    status_label.pack(pady=(8, 0))
 
-    self.create_report_table(
-        category_sales_frame,
-        ("Category", "Revenue"),
-        [
-            ("Mains", "$550.00"),
-            ("Sides", "$120.00"),
-            ("Drinks", "$85.00"),
-            ("Desserts", "$60.00")
-        ]
+    card = tk.Frame(
+        report_window,
+        bg=self.card_color,
+        highlightthickness=1,
+        highlightbackground=self.border_color,
+        padx=14,
+        pady=14
     )
+    card.pack(fill="both", expand=True, padx=16, pady=16)
 
-    self.create_report_table(
-        peak_times_frame,
-        ("Hour", "Orders"),
-        [
-            ("12 PM", "14"),
-            ("1 PM", "18"),
-            ("6 PM", "22"),
-            ("7 PM", "19")
-        ]
-    )
+    columns = ("Metric", "Value")
+    table = ttk.Treeview(card, columns=columns, show="headings", height=8)
+
+    for col in columns:
+        table.heading(col, text=col)
+        table.column(col, width=280, anchor="center")
+
+    table.pack(fill="both", expand=True, padx=10, pady=10)
+
+    def load_report():
+        try:
+            response = self.stub.generate_report(
+                rest_pb2.GenerateReportRequest(
+                    requestId=self.next_request_id(),
+                    userId=self.user_id,
+                    role=self.role
+                )
+            )
+
+            for row in table.get_children():
+                table.delete(row)
+
+            if response.status != "success":
+                status_label.config(text=response.message, fg="red")
+                return
+
+            rows = [
+                ("Total Orders", str(response.totalOrders)),
+                ("Total Revenue", "$" + format(response.totalRevenue, ".2f")),
+                ("Received Orders", str(response.receivedCount)),
+                ("Ready Orders", str(response.readyCount)),
+                ("Completed Orders", str(response.completedCount)),
+                ("Picked Up Orders", str(response.pickedUpCount)),
+            ]
+
+            for row in rows:
+                table.insert("", "end", values=row)
+
+            status_label.config(text="Report generated from backend data.", fg=self.green)
+
+        except Exception as e:
+            status_label.config(text="Error generating report.", fg="red")
+            print("Generate report error:", e)
+
+    tk.Button(
+        report_window,
+        text="Refresh Report",
+        command=load_report,
+        bg=self.orange,
+        fg=self.text_dark,
+        activebackground=self.orange,
+        activeforeground=self.text_dark,
+        relief="flat",
+        bd=0,
+        font=("Arial", 10, "bold"),
+        padx=16,
+        pady=8
+    ).pack(pady=(0, 16))
+
+    load_report()

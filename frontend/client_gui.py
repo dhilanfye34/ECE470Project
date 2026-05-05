@@ -26,6 +26,9 @@ from frontend.manager_ui import (
     build_manager_dashboard,
     manager_get_menu,
     manager_update_price_popup,
+    manager_add_item_popup,
+    manager_edit_item_popup,
+    manager_remove_item,
 )
 from frontend.server_ui import (
     build_server_dashboard,
@@ -33,11 +36,20 @@ from frontend.server_ui import (
     server_place_takeout_popup,
     server_place_dinein_popup,
     server_list_orders,
+    server_status_lookup_popup,
+    server_update_status_popup,
+)
+from frontend.customer_ui import (
+    build_customer_dashboard,
+    customer_get_menu,
+    customer_order_popup,
+    customer_status_popup,
 )
 from frontend.chef_ui import (
     build_chef_dashboard,
     chef_list_orders,
     chef_mark_ready,
+    chef_status_lookup_popup,
 )
 from frontend.reports_ui import manager_view_reports
 
@@ -128,7 +140,7 @@ class RestaurantGUI:
             fg=self.text_dark,
             bg=self.card_color
         ).pack(anchor="w")
-
+        
         self.user_entry = tk.Entry(login_card, width=32, font=("Arial", 11), relief="solid", bd=1)
         self.user_entry.pack(pady=(6, 14), ipady=6)
 
@@ -187,6 +199,29 @@ class RestaurantGUI:
             font=("Arial", 10)
         )
         self.login_status.pack(pady=(14, 0))
+        
+        tk.Label(
+            login_card,
+            text="Ordering as a guest?",
+            font=("Arial", 10),
+            fg=self.text_muted,
+            bg=self.card_color
+        ).pack(pady=(18, 6))
+
+        tk.Button(
+            login_card,
+            text="Continue as Customer",
+            width=22,
+            command=self.continue_as_customer,
+            bg=self.cream,
+            fg=self.text_dark,
+            activebackground=self.cream,
+            activeforeground=self.text_dark,
+            relief="flat",
+            bd=0,
+            font=("Arial", 11, "bold"),
+            pady=8
+        ).pack()
 
     def login_user(self):
         user_id = self.user_entry.get().strip()
@@ -222,6 +257,27 @@ class RestaurantGUI:
             self.login_status.config(text="Could not connect to server.")
             print("Login error:", e)
 
+    def continue_as_customer(self):
+        try:
+            response = self.stub.login(
+                rest_pb2.LoginRequest(
+                    requestId=self.next_request_id(),
+                    userId="cust1",
+                    role="customer"
+                )
+            )
+
+            if response.status == "success":
+                self.user_id = "cust1"
+                self.role = "customer"
+                self.build_customer_dashboard()
+            else:
+                self.login_status.config(text=response.message)
+
+        except Exception as e:
+            self.login_status.config(text="Could not connect to server.")
+            print("Customer login error:", e)
+
     def logout_user(self):
         try:
             self.stub.logout(
@@ -253,6 +309,9 @@ RestaurantGUI.neutral_button = neutral_button
 RestaurantGUI.build_manager_dashboard = build_manager_dashboard
 RestaurantGUI.manager_get_menu = manager_get_menu
 RestaurantGUI.manager_update_price_popup = manager_update_price_popup
+RestaurantGUI.manager_add_item_popup = manager_add_item_popup
+RestaurantGUI.manager_edit_item_popup = manager_edit_item_popup
+RestaurantGUI.manager_remove_item = manager_remove_item
 RestaurantGUI.manager_view_reports = manager_view_reports
 
 RestaurantGUI.build_server_dashboard = build_server_dashboard
@@ -260,11 +319,18 @@ RestaurantGUI.server_get_menu = server_get_menu
 RestaurantGUI.server_place_takeout_popup = server_place_takeout_popup
 RestaurantGUI.server_place_dinein_popup = server_place_dinein_popup
 RestaurantGUI.server_list_orders = server_list_orders
+RestaurantGUI.server_status_lookup_popup = server_status_lookup_popup
+RestaurantGUI.server_update_status_popup = server_update_status_popup
 
 RestaurantGUI.build_chef_dashboard = build_chef_dashboard
 RestaurantGUI.chef_list_orders = chef_list_orders
 RestaurantGUI.chef_mark_ready = chef_mark_ready
+RestaurantGUI.chef_status_lookup_popup = chef_status_lookup_popup
 
+RestaurantGUI.build_customer_dashboard = build_customer_dashboard
+RestaurantGUI.customer_get_menu = customer_get_menu
+RestaurantGUI.customer_order_popup = customer_order_popup
+RestaurantGUI.customer_status_popup = customer_status_popup
 
 if __name__ == "__main__":
     root = tk.Tk()
